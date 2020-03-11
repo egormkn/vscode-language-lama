@@ -1,0 +1,25 @@
+{
+    "name": "language-lama",
+    "displayName": "Lama Language",
+    "description": "Lama Language support for Visual Studio Code",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.43.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "lama",
+            "aliases": ["Lama", "lama"],
+            "extensions": [".lama"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "lama",
+            "scopeName": "source.lama",
+            "path": "./syntaxes/lama.tmLanguage.json"
+        }]
+    }
+}
