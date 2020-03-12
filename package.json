@@ -1,14 +1,32 @@
 {
     "name": "language-lama",
+    "publisher": "egormkn",
+    "version": "0.6.0",
     "displayName": "Lama Language",
     "description": "Lama Language support for Visual Studio Code",
-    "version": "0.0.1",
+    "author": "Egor Makarenko <egormkn@yandex.ru>",
+    "license": "MIT",
+    "homepage": "https://github.com/egormkn/vscode-language-lama",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/egormkn/vscode-language-lama.git"
+    },
+    "bugs": {
+        "url": "https://github.com/egormkn/vscode-language-lama/issues"
+    },
     "engines": {
-        "vscode": "^1.43.0"
+        "vscode": "^1.30.0"
     },
     "categories": [
-        "Programming Languages"
+        "Programming Languages",
+        "Snippets"
     ],
+    "icon": "./images/icon.png",
+    "galleryBanner": {
+        "color": "#C8A000",
+        "theme": "dark"
+    },
+    "//activationEvents": ["onLanguage:lama"],
     "contributes": {
         "languages": [{
             "id": "lama",
@@ -20,6 +38,15 @@
             "language": "lama",
             "scopeName": "source.lama",
             "path": "./syntaxes/lama.tmLanguage.json"
+        }],
+        "snippets": [{
+              "language": "lama",
+              "path": "./snippets/snippets.json"
+        }],
+        "iconThemes": [{
+            "id": "lama",
+            "label": "Lama",
+            "path": "./fileicons/lama-icon-theme.json"
         }]
     }
 }
