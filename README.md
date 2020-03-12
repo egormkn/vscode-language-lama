@@ -1,6 +1,6 @@
-# language-lama README
+# Lama Language extension for VSCode
 
-This is the README for your extension "language-lama". After writing up a brief description, we recommend including the following sections.
+An extension for Visual Studio Code that adds basic editing features such as syntax highlighting, code folding and snippets for the [Lama](https://github.com/JetBrains-Research/Lama) language.
 
 ## Features
 
