@@ -1,0 +1,13 @@
+{
+    "iconDefinitions": {
+        "_lama_file": {
+            "iconPath": "./file_type_lama.svg"
+        }
+    },
+    "fileExtensions": {
+        "lama": "_lama_file"
+    },
+    "languageIds": {
+        "lama": "_lama_file"
+    }
+}
