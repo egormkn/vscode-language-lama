@@ -1,13 +1,13 @@
 {
-	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
     "author": "Egor Makarenko <egormkn@yandex.ru>",
     "license": "MIT",
     "name": "Lama",
     "scopeName": "source.lama",
     "fileTypes": [
-		"lama"
-	],
-	"patterns": [
+        "lama"
+    ],
+    "patterns": [
         {
             "include": "#comment"
         },
@@ -112,7 +112,7 @@
                         }
                     ]
                 }
-            ]   
+            ]
         },
         "variable-name": {
             "name": "variable.other.lama",
@@ -264,7 +264,7 @@
                 }
             ]
         },
-        "postfix-expression": { 
+        "postfix-expression": {
             "patterns": [
                 {
                     "include": "#comment"
