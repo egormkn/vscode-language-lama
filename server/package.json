@@ -1,18 +1,24 @@
 {
-    "name": "lsp-sample-server",
-    "description": "Example implementation of a language server in node.",
+    "name": "vscode-language-lama-server",
+    "description": "Lama Language server",
     "version": "1.0.0",
-    "author": "Microsoft Corporation",
+    "author": "Egor Makarenko <egormkn@yandex.ru>",
     "license": "MIT",
+    "homepage": "https://github.com/egormkn/vscode-language-lama",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/egormkn/vscode-language-lama.git"
+    },
+    "bugs": {
+        "url": "https://github.com/egormkn/vscode-language-lama/issues"
+    },
     "engines": {
         "node": "*"
     },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/Microsoft/vscode-extension-samples"
-    },
     "dependencies": {
-        "vscode-languageserver": "^5.2.1"
+        "chevrotain": "^6.5.0",
+        "vscode-languageserver": "^6.1.1",
+        "vscode-languageserver-textdocument": "^1.0.1"
     },
-    "scripts": {}
+    "devDependencies": {}
 }

@@ -1,65 +1,76 @@
-/* --------------------------------------------------------------------------------------------
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- * ------------------------------------------------------------------------------------------ */
-
 import * as path from 'path';
-import { workspace, ExtensionContext } from 'vscode';
+
+import { workspace, commands, window, ExtensionContext } from 'vscode';
 
 import {
-	LanguageClient,
-	LanguageClientOptions,
-	ServerOptions,
-	TransportKind
+    LanguageClient,
+    LanguageClientOptions,
+    ServerOptions,
+    TransportKind,
+    NodeModule
 } from 'vscode-languageclient';
 
 let client: LanguageClient;
 
-export function activate(context: ExtensionContext) {
-	// The server is implemented in node
-	let serverModule = context.asAbsolutePath(
-		path.join('server', 'out', 'server.js')
-	);
-	// The debug options for the server
-	// --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
-	let debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
+export function activate (context: ExtensionContext): void {
+    
+    console.log('Lama Language extension is activated');
 
-	// If the extension is launched in debug mode then the debug server options are used
-	// Otherwise the run options are used
-	let serverOptions: ServerOptions = {
-		run: { module: serverModule, transport: TransportKind.ipc },
-		debug: {
-			module: serverModule,
-			transport: TransportKind.ipc,
-			options: debugOptions
-		}
-	};
+    // The command has been defined in the package.json file
+    // Now provide the implementation of the command with registerCommand
+    // The commandId parameter must match the command field in package.json
+    const disposable = commands.registerCommand('Lama.Compile', () => {
+        window.showInformationMessage('Hello World!');
+    });
+    context.subscriptions.push(disposable);
 
-	// Options to control the language client
-	let clientOptions: LanguageClientOptions = {
-		// Register the server for plain text documents
-		documentSelector: [{ scheme: 'file', language: 'plaintext' }],
-		synchronize: {
-			// Notify the server about file changes to '.clientrc files contained in the workspace
-			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
-		}
-	};
+    // The server is implemented in node
+    const serverModule: NodeModule = {
+        module: context.asAbsolutePath(
+            path.join('server', 'out', 'server.js')
+        ),
+        transport: TransportKind.ipc
+    };
 
-	// Create the language client and start the client.
-	client = new LanguageClient(
-		'languageServerExample',
-		'Language Server Example',
-		serverOptions,
-		clientOptions
-	);
+    // If the extension is launched in debug mode then the debug server 
+    // options are used. Otherwise the run options are used
+    const serverOptions: ServerOptions = {
+        run: { ...serverModule },
+        debug: {
+            ...serverModule,
+            options: {
+                // run the server in Node's Inspector mode 
+                // so VS Code can attach to the server for debugging
+                execArgv: ['--nolazy', '--inspect=6009']
+            }
+        }
+    };
 
-	// Start the client. This will also launch the server
-	client.start();
+    // Options to control the language client
+    const clientOptions: LanguageClientOptions = {
+        // Register the server for lama documents
+        documentSelector: [{ language: 'lama' }],
+        synchronize: {
+            // Notify the server about file changes to *.lama files
+            fileEvents: workspace.createFileSystemWatcher('**/*.lama')
+        }
+    };
+
+    // Create the language client and start the client.
+    client = new LanguageClient(
+        'lamals',
+        'Lama Language Server',
+        serverOptions,
+        clientOptions
+    );
+
+    // Start the client. This will also launch the server
+    client.start();
 }
 
-export function deactivate(): Thenable<void> | undefined {
-	if (!client) {
-		return undefined;
-	}
-	return client.stop();
+export function deactivate (): Thenable<void> | undefined {
+    
+    console.log('Lama Language extension is deactivated');
+
+    return client?.stop();
 }

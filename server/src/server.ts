@@ -1,239 +1,277 @@
-/* --------------------------------------------------------------------------------------------
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- * ------------------------------------------------------------------------------------------ */
-
 import {
-	createConnection,
-	TextDocuments,
-	TextDocument,
-	Diagnostic,
-	DiagnosticSeverity,
-	ProposedFeatures,
-	InitializeParams,
-	DidChangeConfigurationNotification,
-	CompletionItem,
-	CompletionItemKind,
-	TextDocumentPositionParams
-} from 'vscode-languageserver';
+    createConnection,
+    TextDocuments,
+    Diagnostic,
+    DiagnosticSeverity,
+    ProposedFeatures,
+    InitializeParams,
+    DidChangeConfigurationNotification,
+    CompletionItem,
+    CompletionItemKind,
+    TextDocumentPositionParams,
+    TextDocumentChangeRegistrationOptions,
+    ClientCapabilities,
+    TextDocumentSyncOptions,
+    TextDocumentSyncKind,
+    TextDocumentChangeEvent,
+    DidChangeWatchedFilesParams,
+    WorkspaceFolder,
+    WorkspaceFoldersChangeEvent,
+    DidChangeConfigurationParams
+} from 'vscode-languageserver'
 
-// Create a connection for the server. The connection uses Node's IPC as a transport.
-// Also include all preview / proposed LSP features.
-let connection = createConnection(ProposedFeatures.all);
+import { TextDocument } from 'vscode-languageserver-textdocument'
 
-// Create a simple text document manager. The text document manager
-// supports full document sync only
-let documents: TextDocuments = new TextDocuments();
+import { lexer } from './lexer'
+import { parser } from './parser'
 
-let hasConfigurationCapability: boolean = false;
-let hasWorkspaceFolderCapability: boolean = false;
-let hasDiagnosticRelatedInformationCapability: boolean = false;
+// Create an IPC connection for the server and include all preview / proposed LSP features
+const connection = createConnection(ProposedFeatures.all);
+
+// Create a simple text document manager that supports full document sync only
+const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
+
+let hasConfigurationCapability = false;
+let hasWorkspaceFolderCapability = false;
+let hasDiagnosticRelatedInformationCapability = false;
 
 connection.onInitialize((params: InitializeParams) => {
-	let capabilities = params.capabilities;
 
-	// Does the client support the `workspace/configuration` request?
-	// If not, we will fall back using global settings
-	hasConfigurationCapability = !!(
-		capabilities.workspace && !!capabilities.workspace.configuration
-	);
-	hasWorkspaceFolderCapability = !!(
-		capabilities.workspace && !!capabilities.workspace.workspaceFolders
-	);
-	hasDiagnosticRelatedInformationCapability = !!(
-		capabilities.textDocument &&
-		capabilities.textDocument.publishDiagnostics &&
-		capabilities.textDocument.publishDiagnostics.relatedInformation
-	);
+    connection.console.log("Initializing Lama Language Server...");
 
-	return {
-		capabilities: {
-			textDocumentSync: documents.syncKind,
-			// Tell the client that the server supports code completion
-			completionProvider: {
-				resolveProvider: true
-			}
-		}
-	};
+    const capabilities: ClientCapabilities = params.capabilities;
+    const workspaceFolders: WorkspaceFolder[] | null = params.workspaceFolders;
+
+    connection.console.log("Capabilities:");
+    connection.console.log(JSON.stringify(capabilities, undefined, 2));
+
+    connection.console.log("Workspace folders:");
+    connection.console.log(JSON.stringify(workspaceFolders, undefined, 2));
+
+    connection.console.log("Client info:");
+    connection.console.log(JSON.stringify(params.clientInfo, undefined, 2));
+    
+    // Does the client support the `workspace/configuration` request?
+    // If not, we will fall back using global settings
+    hasConfigurationCapability = !!capabilities.workspace?.configuration;
+    hasWorkspaceFolderCapability = !!capabilities.workspace?.workspaceFolders;
+    hasDiagnosticRelatedInformationCapability = !!capabilities.textDocument?.publishDiagnostics?.relatedInformation;
+
+    return {
+        capabilities: {
+            textDocumentSync: TextDocumentSyncKind.Full,
+            completionProvider: {
+                resolveProvider: true
+            }
+        }
+    };
 });
 
 connection.onInitialized(() => {
-	if (hasConfigurationCapability) {
-		// Register for all configuration changes.
-		connection.client.register(DidChangeConfigurationNotification.type, undefined);
-	}
-	if (hasWorkspaceFolderCapability) {
-		connection.workspace.onDidChangeWorkspaceFolders(_event => {
-			connection.console.log('Workspace folder change event received.');
-		});
-	}
+    if (hasConfigurationCapability) {
+        // Register for all configuration changes.
+        connection.client.register(DidChangeConfigurationNotification.type, undefined);
+    }
+    if (hasWorkspaceFolderCapability) {
+        connection.workspace.onDidChangeWorkspaceFolders((change: WorkspaceFoldersChangeEvent) => {
+            connection.console.log(`Workspace folder change event received`);
+        });
+    }
 });
 
-// The example settings
-interface ExampleSettings {
-	maxNumberOfProblems: number;
+interface Settings {
+    maxNumberOfProblems: number;
+    sdkPath?: string;
 }
 
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
 // Please note that this is not the case when using this server with the client provided in this example
 // but could happen with other clients.
-const defaultSettings: ExampleSettings = { maxNumberOfProblems: 1000 };
-let globalSettings: ExampleSettings = defaultSettings;
+const defaultSettings: Settings = {
+    maxNumberOfProblems: 100
+};
+let globalSettings: Settings = defaultSettings;
 
 // Cache the settings of all open documents
-let documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
+const documentSettings: Map<string, Thenable<Settings>> = new Map();
 
-connection.onDidChangeConfiguration(change => {
-	if (hasConfigurationCapability) {
-		// Reset all cached document settings
-		documentSettings.clear();
-	} else {
-		globalSettings = <ExampleSettings>(
-			(change.settings.languageServerExample || defaultSettings)
-		);
-	}
-
-	// Revalidate all open text documents
-	documents.all().forEach(validateTextDocument);
-});
-
-function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
-	if (!hasConfigurationCapability) {
-		return Promise.resolve(globalSettings);
-	}
-	let result = documentSettings.get(resource);
-	if (!result) {
-		result = connection.workspace.getConfiguration({
-			scopeUri: resource,
-			section: 'languageServerExample'
-		});
-		documentSettings.set(resource, result);
-	}
-	return result;
+function getDocumentSettings(resource: string): Thenable<Settings> {
+    if (!hasConfigurationCapability) {
+        return Promise.resolve(globalSettings);
+    }
+    let result = documentSettings.get(resource);
+    if (!result) {
+        result = connection.workspace.getConfiguration({
+            scopeUri: resource,
+            section: 'lama'
+        });
+        connection.console.log(`Retrieved configuration: ${JSON.stringify(result)}`);
+        documentSettings.set(resource, result);
+    }
+    return result;
 }
 
+async function validateTextDocument(textDocument: TextDocument): Promise<void> {
+    // In this simple example we get the settings for every validate run.
+    const settings = await getDocumentSettings(textDocument.uri);
+
+    return;
+
+    const text = textDocument.getText();
+
+    const diagnostics: Diagnostic[] = [];
+
+    const { errors, groups, tokens } = lexer.tokenize(text)
+
+    tokens.forEach((token, index) => {
+        const diagnostic: Diagnostic = {
+            severity: DiagnosticSeverity.Hint,
+            range: {
+                start: textDocument.positionAt(token.startOffset),
+                end: textDocument.positionAt((token.endOffset ?? token.startOffset) + 1)
+            },
+            message: token.image,
+            source: 'Lama Lexer'
+        };
+        if (hasDiagnosticRelatedInformationCapability) {
+            diagnostic.relatedInformation = [
+                {
+                    location: {
+                        uri: textDocument.uri,
+                        range: Object.assign({}, diagnostic.range)
+                    },
+                    message: JSON.stringify(token.tokenType, null, '  ')
+                }
+            ];
+        }
+        diagnostics.push(diagnostic);
+    })
+
+    if (errors.length > 0) {
+        console.log("Lexer errors:")
+        console.log(JSON.stringify(errors, null, '\t'))
+    }
+
+    parser.input = tokens
+    parser.parse()
+
+    if (parser.errors.length > 0) {
+        console.log("Parser errors:")
+        console.log(JSON.stringify(parser.errors, null, '\t'))
+        parser.errors.forEach((error, index) => {
+            const diagnostic: Diagnostic = {
+                severity: DiagnosticSeverity.Warning,
+                range: {
+                    start: textDocument.positionAt(error.token.startOffset),
+                    end: textDocument.positionAt((error.token.endOffset ?? error.token.startOffset) + 1)
+                },
+                message: error.message,
+                source: 'Lama Parser'
+            };
+            if (hasDiagnosticRelatedInformationCapability) {
+                diagnostic.relatedInformation = [
+                    {
+                        location: {
+                            uri: textDocument.uri,
+                            range: Object.assign({}, diagnostic.range)
+                        },
+                        message: error.name
+                    }
+                ];
+            }
+            diagnostics.push(diagnostic);
+        })
+    }
+
+    connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+}
+
+
+
+
+connection.onDidChangeConfiguration((change: DidChangeConfigurationParams) => {
+
+    console.log('Configuration changed');
+
+    if (hasConfigurationCapability) {
+        documentSettings.clear(); // Reset all cached document settings
+    } else {
+        globalSettings = (change.settings.lama || defaultSettings) as Settings;
+    }
+
+    documents.all().forEach(validateTextDocument); // Revalidate all open text documents
+});
+
 // Only keep settings for open documents
-documents.onDidClose(e => {
-	documentSettings.delete(e.document.uri);
+documents.onDidClose((change: TextDocumentChangeEvent<TextDocument>) => {
+    documentSettings.delete(change.document.uri);
 });
 
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
-documents.onDidChangeContent(change => {
-	validateTextDocument(change.document);
+documents.onDidChangeContent((change: TextDocumentChangeEvent<TextDocument>) => {
+    console.log(`Document content changed: ${change.document.uri}`);
+    validateTextDocument(change.document);
 });
 
-async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-	// In this simple example we get the settings for every validate run.
-	let settings = await getDocumentSettings(textDocument.uri);
-
-	// The validator creates diagnostics for all uppercase words length 2 and more
-	let text = textDocument.getText();
-	let pattern = /\b[A-Z]{2,}\b/g;
-	let m: RegExpExecArray | null;
-
-	let problems = 0;
-	let diagnostics: Diagnostic[] = [];
-	while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
-		problems++;
-		let diagnostic: Diagnostic = {
-			severity: DiagnosticSeverity.Warning,
-			range: {
-				start: textDocument.positionAt(m.index),
-				end: textDocument.positionAt(m.index + m[0].length)
-			},
-			message: `${m[0]} is all uppercase.`,
-			source: 'ex'
-		};
-		if (hasDiagnosticRelatedInformationCapability) {
-			diagnostic.relatedInformation = [
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnostic.range)
-					},
-					message: 'Spelling matters'
-				},
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnostic.range)
-					},
-					message: 'Particularly for names'
-				}
-			];
-		}
-		diagnostics.push(diagnostic);
-	}
-
-	// Send the computed diagnostics to VSCode.
-	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
-}
-
-connection.onDidChangeWatchedFiles(_change => {
-	// Monitored files have change in VSCode
-	connection.console.log('We received an file change event');
+connection.onDidChangeWatchedFiles((change: DidChangeWatchedFilesParams) => {
+    connection.console.log(`Watched files changed: ${change.changes.map(c => c.uri).join('\n')}`);
 });
 
 // This handler provides the initial list of the completion items.
-connection.onCompletion(
-	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-		// The pass parameter contains the position of the text document in
-		// which code complete got requested. For the example we ignore this
-		// info and always provide the same completion items.
-		return [
-			{
-				label: 'TypeScript',
-				kind: CompletionItemKind.Text,
-				data: 1
-			},
-			{
-				label: 'JavaScript',
-				kind: CompletionItemKind.Text,
-				data: 2
-			}
-		];
-	}
+connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+        // The pass parameter contains the position of the text document in
+        // which code complete got requested. For the example we ignore this
+        // info and always provide the same completion items.
+        return [
+            {
+                label: 'TypeScript',
+                kind: CompletionItemKind.Text,
+                data: 1
+            },
+            {
+                label: 'JavaScript',
+                kind: CompletionItemKind.Text,
+                data: 2
+            }
+        ];
+    }
 );
 
 // This handler resolves additional information for the item selected in
 // the completion list.
-connection.onCompletionResolve(
-	(item: CompletionItem): CompletionItem => {
-		if (item.data === 1) {
-			item.detail = 'TypeScript details';
-			item.documentation = 'TypeScript documentation';
-		} else if (item.data === 2) {
-			item.detail = 'JavaScript details';
-			item.documentation = 'JavaScript documentation';
-		}
-		return item;
-	}
+connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
+        if (item.data === 1) {
+            item.detail = 'TypeScript details';
+            item.documentation = 'TypeScript documentation';
+        } else if (item.data === 2) {
+            item.detail = 'JavaScript details';
+            item.documentation = 'JavaScript documentation';
+        }
+        return item;
+    }
 );
 
-/*
 connection.onDidOpenTextDocument((params) => {
-	// A text document got opened in VSCode.
-	// params.textDocument.uri uniquely identifies the document. For documents store on disk this is a file URI.
-	// params.textDocument.text the initial full content of the document.
-	connection.console.log(`${params.textDocument.uri} opened.`);
+    // A text document got opened in VSCode.
+    // params.textDocument.uri uniquely identifies the document. For documents store on disk this is a file URI.
+    // params.textDocument.text the initial full content of the document.
+    connection.console.log(`${params.textDocument.uri} opened.`);
 });
 connection.onDidChangeTextDocument((params) => {
-	// The content of a text document did change in VSCode.
-	// params.textDocument.uri uniquely identifies the document.
-	// params.contentChanges describe the content changes to the document.
-	connection.console.log(`${params.textDocument.uri} changed: ${JSON.stringify(params.contentChanges)}`);
+    // The content of a text document did change in VSCode.
+    // params.textDocument.uri uniquely identifies the document.
+    // params.contentChanges describe the content changes to the document.
+    connection.console.log(`${params.textDocument.uri} changed: ${JSON.stringify(params.contentChanges)}`);
 });
 connection.onDidCloseTextDocument((params) => {
-	// A text document got closed in VSCode.
-	// params.textDocument.uri uniquely identifies the document.
-	connection.console.log(`${params.textDocument.uri} closed.`);
+    // A text document got closed in VSCode.
+    // params.textDocument.uri uniquely identifies the document.
+    connection.console.log(`${params.textDocument.uri} closed.`);
 });
-*/
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events
 documents.listen(connection);
 
-// Listen on the connection
-connection.listen();
+connection.listen(); // Listen on the connection

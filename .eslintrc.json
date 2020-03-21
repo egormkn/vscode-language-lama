@@ -15,6 +15,11 @@
     ],
     "ignorePatterns": [
         "node_modules",
-        "out"
-    ]
+        "out",
+        "test"
+    ],
+    "rules": {
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/camelcase": "off"
+    }
 }
