@@ -1,9 +1,7 @@
 {
-    "name": "language-lama",
-    "publisher": "egormkn",
-    "version": "0.6.0",
-    "displayName": "Lama Language",
+    "name": "vscode-language-lama",
     "description": "Lama Language support for Visual Studio Code",
+    "version": "0.6.0",
     "author": "Egor Makarenko <egormkn@yandex.ru>",
     "license": "MIT",
     "homepage": "https://github.com/egormkn/vscode-language-lama",
@@ -17,36 +15,121 @@
     "engines": {
         "vscode": "^1.30.0"
     },
+    "publisher": "egormkn",
+    "displayName": "Lama Language",
     "categories": [
         "Programming Languages",
         "Snippets"
     ],
-    "icon": "./images/icon.png",
+    "icon": "images/icon.png",
     "galleryBanner": {
         "color": "#C8A000",
         "theme": "dark"
     },
-    "//activationEvents": ["onLanguage:lama"],
+    "activationEvents": [
+        "onLanguage:lama",
+        "workspaceContains:**/*.lama"
+    ],
+    "main": "./client/out/extension",
     "contributes": {
-        "languages": [{
-            "id": "lama",
-            "aliases": ["Lama", "lama"],
-            "extensions": [".lama"],
-            "configuration": "./language-configuration.json"
-        }],
-        "grammars": [{
-            "language": "lama",
-            "scopeName": "source.lama",
-            "path": "./syntaxes/lama.tmLanguage.json"
-        }],
-        "snippets": [{
-              "language": "lama",
-              "path": "./snippets/snippets.json"
-        }],
-        "iconThemes": [{
-            "id": "lama",
-            "label": "Lama",
-            "path": "./fileicons/lama-icon-theme.json"
-        }]
+        "languages": [
+            {
+                "id": "lama",
+                "aliases": [
+                    "Lama",
+                    "lama"
+                ],
+                "extensions": [
+                    ".lama"
+                ],
+                "configuration": "./languages/lama.language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "lama",
+                "scopeName": "source.lama",
+                "path": "./syntaxes/lama.tmLanguage.json"
+            }
+        ],
+        "snippets": [
+            {
+                "language": "lama",
+                "path": "./snippets/lama.snippets.json"
+            }
+        ],
+        "iconThemes": [
+            {
+                "id": "lama",
+                "label": "Lama",
+                "path": "./icons/lama.icontheme.json"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "Lama",
+            "properties": {
+                "lama.maxNumberOfProblems": {
+                    "scope": "resource",
+                    "type": "number",
+                    "default": 100,
+                    "minimum": 0,
+                    "description": "Controls the maximum number of problems produced by the language server."
+                },
+                "lama.standardLibraryPath": {
+                    "scope": "window",
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null,
+                    "description": "Specifies the path to Lama standard library sources."
+                },
+                "lama.trace.server": {
+                    "scope": "window",
+                    "type": "string",
+                    "enum": [
+                        "off",
+                        "messages",
+                        "verbose"
+                    ],
+                    "default": "off",
+                    "description": "Traces the communication between VSCode and the language server."
+                }
+            }
+        },
+        "commands": [
+            {
+                "command": "Lama.Compile",
+                "title": "Compile current file",
+                "category": "Lama"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -b",
+        "lint": "eslint src --ext ts",
+        "watch": "tsc -b -w",
+        "pretest": "npm run compile && npm run lint",
+        "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+        "test": "sh ./scripts/e2e.sh",
+        "clean": "shx rm -rf **/out/",
+        "clean:all": "shx rm -rf **/out/ **/node_modules/",
+        "testfile": "ts-node ./server/src/test.ts"
+    },
+    "devDependencies": {
+        "@types/glob": "^7.1.1",
+        "@types/mocha": "^7.0.1",
+        "@types/node": "^12.11.7",
+        "@typescript-eslint/eslint-plugin": "^2.23.0",
+        "@typescript-eslint/parser": "^2.23.0",
+        "eslint": "^6.8.0",
+        "glob": "^7.1.6",
+        "mocha": "^7.0.1",
+        "shx": "^0.3.2",
+        "ts-node": "^8.7.0",
+        "typescript": "^3.7.5",
+        "vscode-test": "^1.3.0"
     }
 }

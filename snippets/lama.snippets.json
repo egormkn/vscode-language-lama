@@ -1,0 +1,88 @@
+{
+    "import": {
+        "scope": "lama",
+        "prefix": "import",
+        "body": "import ${1:module};$0",
+        "description": "Import module"
+    },
+    "if": {
+        "scope": "lama",
+        "prefix": "if",
+        "body": [
+            "if ${1:condition} then",
+            "\t$0",
+            "fi"
+        ],
+        "description": "If condition"
+    },
+    "for": {
+        "scope": "lama",
+        "prefix": "for",
+        "body": [
+            "for ${1:init}, ${2:condition}, ${3:step} do",
+            "\t$0",
+            "od"
+        ],
+        "description": "For loop"
+    },
+    "while": {
+        "scope": "lama",
+        "prefix": "while",
+        "body": [
+            "while ${1:condition} do",
+            "\t$0",
+            "od"
+        ],
+        "description": "While loop"
+    },
+    "repeat": {
+        "scope": "lama",
+        "prefix": "repeat",
+        "body": [
+            "repeat",
+            "\t$0",
+            "until ${1:condition}"
+        ],
+        "description": "Repeat loop"
+    },
+    "case": {
+        "scope": "lama",
+        "prefix": "case",
+        "body": [
+            "case ${1:expression} of",
+            "\t$0",
+            "esac"
+        ],
+        "description": "Pattern matching"
+    },
+    "function": {
+        "scope": "lama",
+        "prefix": "fun",
+        "body": [
+            "fun ${1:name} (${2:args}) {",
+            "\t$0",
+            "}"
+        ],
+        "description": "Named function"
+    },
+    "lambda": {
+        "scope": "lama",
+        "prefix": ["fun", "lambda"],
+        "body": [
+            "fun (${1:args}) {",
+            "\t$0",
+            "}"
+        ],
+        "description": "Lambda function"
+    },
+    "infix": {
+        "scope": "lama",
+        "prefix": "infix",
+        "body": [
+            "${1|infix,infixl,infixr|} ${2:op} ${3|at,before,after|} ${4:op} (${5:args}) {",
+            "\t$0",
+            "}"
+        ],
+        "description": "Infix operator"
+    }
+}

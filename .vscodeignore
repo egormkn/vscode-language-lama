@@ -1,3 +1,14 @@
 .vscode/**
 .vscode-test/**
+scripts/**
+
+**/*.ts
+**/*.map
+**/tsconfig.json
+**/tsconfig.base.json
+**/.eslintrc.json
+
 .gitignore
+.travis.yml
+LICENSE
+README.md
