@@ -1,18 +1,27 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { CstParser, CstNode, IToken } from 'chevrotain'
+import { EmbeddedActionsParser, CstParser, CstElement, CstNode, IToken } from 'chevrotain'
 import Tokens, { vocabulary } from './lexer'
+import { Environment } from './environment'
+import { Node as AstNode, Data, Position, Point, Parent, Literal } from 'unist'
 
-class Parser extends CstParser {
+export class Parser extends CstParser {
 
   constructor () {
     super(vocabulary, {
-      traceInitPerf: true,
-      recoveryEnabled: true
+      traceInitPerf: true, // false for production
+      skipValidations: false, // true for production
+      recoveryEnabled: true,
+      nodeLocationTracking: "full"
     })
     this.performSelfAnalysis()
   }
 
-  public parse = this.RULE("parse", () => {
+  public parse (env: Environment, tokens: IToken[]): CstNode {
+    this.input = tokens
+    return this.unit(0, [env])
+  }
+
+  private unit = this.RULE("unit", () => {
     this.MANY(() => {
       this.CONSUME(Tokens.Import)
       this.CONSUME(Tokens.UIdentifier)
@@ -21,12 +30,12 @@ class Parser extends CstParser {
     this.SUBRULE(this.scopeExpression)
   })
 
-  private scopeExpression = this.RULE("scopeExpression", inCase => {
+  private scopeExpression = this.RULE("scopeExpression", () => {
     this.MANY(() => {
       this.SUBRULE(this.definition)
     })
     this.OPTION(() => {
-      this.SUBRULE(this.expression, { ARGS: [inCase] })
+      this.SUBRULE(this.expression)
     })
   })
 
@@ -56,9 +65,9 @@ class Parser extends CstParser {
     })
     this.CONSUME(Tokens.Fun)
     this.CONSUME(Tokens.LIdentifier)
-    this.CONSUME(Tokens.LParent)
+    this.CONSUME(Tokens.LRound)
     this.SUBRULE(this.functionArguments)
-    this.CONSUME(Tokens.RParent)
+    this.CONSUME(Tokens.RRound)
     this.SUBRULE(this.functionBody)
   })
 
@@ -81,13 +90,13 @@ class Parser extends CstParser {
     this.OPTION(() => {
       this.CONSUME(Tokens.Public)
     })
-    this.CONSUME(Tokens.InfixAny)
+    this.CONSUME(Tokens.InfixType)
     this.CONSUME1(Tokens.Operator)
     this.CONSUME(Tokens.InfixLevel)
     this.CONSUME2(Tokens.Operator)
-    this.CONSUME(Tokens.LParent)
+    this.CONSUME(Tokens.LRound)
     this.SUBRULE(this.functionArguments)
-    this.CONSUME(Tokens.RParent)
+    this.CONSUME(Tokens.RRound)
     this.SUBRULE(this.functionBody)
   })
 
@@ -121,56 +130,36 @@ class Parser extends CstParser {
     })
   })
 
-  private expression = this.RULE("expression", inCase => {
+  private expression = this.RULE("expression", () => {
+    this.SUBRULE(this.basicExpression)
     this.OPTION(() => {
-      this.SUBRULE(this.basicExpression)
       this.CONSUME(Tokens.Semicolon)
+      this.SUBRULE(this.expression)
     })
-    this.SUBRULE(this.basicExpression, { ARGS: [inCase] })
   })
 
-  private basicExpression = this.RULE("basicExpression", inCase => {
-    this.AT_LEAST_ONE_SEP({
-      SEP: Tokens.Operator, // FIXME: Use operator priority
+  private basicExpression = this.RULE("basicExpression", () => {
+    this.SUBRULE1(this.postfixExpression)
+    this.MANY({
+      GATE: () => !this.BACKTRACK(this.caseBranchPrefix).apply(this),
       DEF: () => {
-        this.OPTION(() => {
-          this.CONSUME(Tokens.Minus)
-        })
-        this.SUBRULE(this.postfixExpression)
+        this.CONSUME(Tokens.Operator)
+        this.SUBRULE2(this.postfixExpression)
       }
     })
+  })
+
+  private postfixExpression = this.RULE("postfixExpression", () => {
     this.OPTION(() => {
       this.CONSUME(Tokens.Minus)
     })
-    this.SUBRULE(this.postfixExpression, { ARGS: [inCase] })
-  })
-
-  private basicExpressionNoBar = this.RULE("basicExpressionNoBar", inCase => {
-    this.AT_LEAST_ONE_SEP({
-      SEP: Tokens.Operator, // FIXME: Use operator priority
-      DEF: () => {
-        this.SUBRULE(this.minusPostfixExpression)
-      }
-    })
-    this.CONSUME(Tokens.NotBarOperator)
-    this.SUBRULE(this.minusPostfixExpression, { ARGS: [inCase] })
-  })
-
-  private minusPostfixExpression = this.RULE("minusPostfixExpression", inCase => {
-    this.OPTION(() => {
-      this.CONSUME(Tokens.Minus)
-    })
-    this.SUBRULE(this.postfixExpression, { ARGS: [inCase] })
-  })
-
-  private postfixExpression = this.RULE("postfixExpression", inCase => {
-    this.SUBRULE(this.primary, { ARGS: [inCase] })
+    this.SUBRULE(this.primary)
     this.MANY(() => {
       this.SUBRULE(this.postfix)
     })
   })
 
-  private primary = this.RULE("primary", inCase => { // TODO: Apply
+  private primary = this.RULE("primary", () => { // TODO: Apply
     this.OR([
       {
         ALT: () => {
@@ -189,12 +178,7 @@ class Parser extends CstParser {
       },
       {
         ALT: () => {
-          this.CONSUME(Tokens.True)
-        }
-      },
-      {
-        ALT: () => {
-          this.CONSUME(Tokens.False)
+          this.CONSUME(Tokens.BooleanLiteral)
         }
       },
       {
@@ -206,9 +190,9 @@ class Parser extends CstParser {
       {
         ALT: () => {
           this.CONSUME(Tokens.Fun)
-          this.CONSUME1(Tokens.LParent)
+          this.CONSUME1(Tokens.LRound)
           this.SUBRULE(this.functionArguments)
-          this.CONSUME1(Tokens.RParent)
+          this.CONSUME1(Tokens.RRound)
           this.SUBRULE(this.functionBody)
         }
       },
@@ -227,14 +211,14 @@ class Parser extends CstParser {
       },
       {
         ALT: () => {
-          this.CONSUME(Tokens.RCurly)
+          this.CONSUME(Tokens.LCurly)
           this.AT_LEAST_ONE(() => {
             this.SUBRULE(this.definition)
           })
           this.OPTION2(() => {
             this.SUBRULE1(this.expression)
           })
-          this.CONSUME(Tokens.LCurly)
+          this.CONSUME(Tokens.RCurly)
         }
       },
       {
@@ -279,9 +263,19 @@ class Parser extends CstParser {
       },
       {
         ALT: () => {
-          this.CONSUME2(Tokens.LParent)
+          this.SUBRULE(this.lazyExpression)
+        }
+      },
+      {
+        ALT: () => {
+          this.SUBRULE(this.etaExpression)
+        }
+      },
+      {
+        ALT: () => {
+          this.CONSUME2(Tokens.LRound)
           this.SUBRULE2(this.expression)
-          this.CONSUME2(Tokens.RParent)
+          this.CONSUME2(Tokens.RRound)
         }
       },
       {
@@ -323,14 +317,14 @@ class Parser extends CstParser {
   private symbolExpression = this.RULE("symbolExpression", () => {
     this.CONSUME(Tokens.UIdentifier)
     this.OPTION(() => {
-      this.CONSUME(Tokens.LParent)
+      this.CONSUME(Tokens.LRound)
       this.AT_LEAST_ONE_SEP({
         SEP: Tokens.Comma,
         DEF: () => {
           this.SUBRULE(this.expression)
         }
       })
-      this.CONSUME(Tokens.RParent)
+      this.CONSUME(Tokens.RRound)
     })
   })
 
@@ -398,15 +392,30 @@ class Parser extends CstParser {
     this.CONSUME(Tokens.Case)
     this.SUBRULE(this.expression)
     this.CONSUME(Tokens.Of)
-    this.AT_LEAST_ONE_SEP({
-      SEP: Tokens.Bar,
-      DEF: () => { 
-        this.SUBRULE(this.pattern)
-        this.CONSUME(Tokens.Arrow)
-        this.SUBRULE(this.scopeExpression, { ARGS: [true] })
-      }
+    this.SUBRULE(this.pattern)
+    this.CONSUME(Tokens.Arrow)
+    this.SUBRULE1(this.scopeExpression)
+    this.MANY(() => {
+      this.SUBRULE(this.caseBranchPrefix)
+      this.SUBRULE2(this.scopeExpression)
     })
     this.CONSUME(Tokens.Esac)
+  })
+
+  private caseBranchPrefix = this.RULE("caseBranchPrefix", () => {
+    this.CONSUME(Tokens.Bar)
+    this.SUBRULE(this.pattern)
+    this.CONSUME(Tokens.Arrow)
+  })
+
+  private lazyExpression = this.RULE("lazyExpression", () => {
+    this.CONSUME(Tokens.Lazy)
+    this.SUBRULE(this.basicExpression)
+  })
+
+  private etaExpression = this.RULE("etaExpression", () => {
+    this.CONSUME(Tokens.Eta)
+    this.SUBRULE(this.basicExpression)
   })
 
   private postfix = this.RULE("postfix", () => {
@@ -446,14 +455,14 @@ class Parser extends CstParser {
   })
 
   private postfixCall = this.RULE("postfixCall", () => {
-    this.CONSUME(Tokens.LParent)
+    this.CONSUME(Tokens.LRound)
     this.MANY_SEP({
       SEP: Tokens.Comma,
       DEF: () => {
         this.SUBRULE(this.expression)
       }
     })
-    this.CONSUME(Tokens.RParent)
+    this.CONSUME(Tokens.RRound)
   })
 
   private postfixIndex = this.RULE("postfixIndex", () => {
@@ -476,7 +485,7 @@ class Parser extends CstParser {
     this.OR([
       {
         ALT: () => {
-          this.CONSUME(Tokens.Wildcard)
+          this.CONSUME(Tokens.Underscore)
         }
       },
       {
@@ -511,12 +520,7 @@ class Parser extends CstParser {
       },
       {
         ALT: () => {
-          this.CONSUME(Tokens.True)
-        }
-      },
-      {
-        ALT: () => {
-          this.CONSUME(Tokens.False)
+          this.CONSUME(Tokens.BooleanLiteral)
         }
       },
       {
@@ -527,9 +531,9 @@ class Parser extends CstParser {
       },
       {
         ALT: () => {
-          this.CONSUME(Tokens.LParent)
+          this.CONSUME(Tokens.LRound)
           this.SUBRULE(this.pattern)
-          this.CONSUME(Tokens.RParent)
+          this.CONSUME(Tokens.RRound)
         }
       },
       {
@@ -543,14 +547,14 @@ class Parser extends CstParser {
   private sExprPattern = this.RULE("sExprPattern", () => {
     this.CONSUME(Tokens.UIdentifier)
     this.OPTION(() => {
-      this.CONSUME(Tokens.LParent)
+      this.CONSUME(Tokens.LRound)
       this.AT_LEAST_ONE_SEP({
         SEP: Tokens.Comma,
         DEF: () => {
           this.SUBRULE(this.pattern)
         }
       })
-      this.CONSUME(Tokens.RParent)
+      this.CONSUME(Tokens.RRound)
     })
   })
 
@@ -585,5 +589,3 @@ class Parser extends CstParser {
   })
 
 }
-
-export const parser = new Parser()

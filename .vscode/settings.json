@@ -10,6 +10,8 @@
     "typescript.tsc.autoDetect": "off",
     // Prefer single quotes
     "typescript.preferences.quoteStyle": "single",
+    // Remove unnesessary semicolons
+    "typescript.format.semicolons": "remove",
     // Enable ESLint as a formatter
     "eslint.format.enable": true
 }

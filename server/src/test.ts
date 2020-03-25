@@ -1,37 +1,18 @@
-import { createToken, Lexer, CstParser } from 'chevrotain'
+import { lexer } from './lexer'
+import { Parser } from './parser'
+import * as fs from 'fs'
+import { Environment } from './environment'
 
-const Identifier = createToken({ name: "Identifier", pattern: /[a-z][a-zA-Z_0-9]*/ })
-const InfixAny = createToken({ name: "InfixAny", pattern: Lexer.NA })
-const InfixL = createToken({ name: "InfixL", pattern: /infixl/, longer_alt: Identifier, categories: [InfixAny] })
-const InfixR = createToken({ name: "InfixR", pattern: /infixr/, longer_alt: Identifier, categories: [InfixAny] })
-const Infix = createToken({ name: "Infix", pattern: /infix/, longer_alt: Identifier, categories: [InfixAny] })
+const text = fs.readFileSync(process.argv[2], "utf-8")
 
-const vocabulary = [InfixL, InfixR, Infix, Identifier]
-
-const testLexer = new Lexer(vocabulary, {
-    traceInitPerf: true
-})
-
-const { tokens } = testLexer.tokenize('infixr')
-
-class Parser extends CstParser {
-
-    constructor () {
-        super(vocabulary, {
-            traceInitPerf: true
-        })
-        this.performSelfAnalysis()
-    }
-  
-    public parse = this.RULE("parse", () => {
-        this.CONSUME(InfixAny)
-    })
-}
+const { tokens, errors } = lexer.tokenize(text)
 
 const parser = new Parser()
 
-parser.input = tokens
+console.log(JSON.stringify(errors, null, '\t'))
 
-parser.parse()
+const result = parser.parse(new Environment(), tokens)
 
 console.log(JSON.stringify(parser.errors, null, '\t'))
+
+console.log(JSON.stringify(result, null, '\t'))

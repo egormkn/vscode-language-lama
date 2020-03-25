@@ -107,7 +107,7 @@
         ]
     },
     "scripts": {
-        "vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run compile",
+        "vscode:prepublish": "npm run compile",
         "compile": "tsc -b",
         "lint": "eslint src --ext ts",
         "watch": "tsc -b -w",
@@ -116,7 +116,7 @@
         "test": "sh ./scripts/e2e.sh",
         "clean": "shx rm -rf **/out/",
         "clean:all": "shx rm -rf **/out/ **/node_modules/",
-        "testfile": "ts-node ./server/src/test.ts /home/egor/Documents/Lama/stdlib/Collection.lama"
+        "testfile": "ts-node ./server/src/test.ts"
     },
     "devDependencies": {
         "@types/glob": "^7.1.1",
