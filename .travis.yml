@@ -15,8 +15,8 @@ deploy:
   api_key:
     secure: bgU7110YPVTkOrxGl9e3bP/OMu0lhnXMkmjXE4V4ZeSBFC5oTpz9seDuJrEKrgi4RQkvJMPOh/+V4gM+bJw7qZxPynzLoe6sElRPq2PY3lI6QNG0Yx2OHvsTiFW29IH/myn/eNdQTTZroBh0/pqVeOjnyvKDH07ltqJqQ3XP+NXozc5A7MowbJ6Hd1fTB/ILUaJOSTTWmoBIUltfh3zbaCShcP2iP3FPENP6FTGJ2vmiJGBM/2DzdBDCvamiTUmsTL6bVdR0MQxfe6Rc3LjZumOFMHIeZxuaA94kjsekuTvoOfqoYcUBKxNaSKwW3gtMyU+MeB215eOtb39u2eg+HmbWlxdn15DSWexaE9LubBX6HbyikZDrPRV3OSbF43k6sWBL6xquEmMRBXwMCZ3ko/AYpYHPJ9CY2LO1mBnRotl+Y5sSK1uRPhFgwFAJYJvpDTnWgbLItrufqpvsvv3iVu6JkX+Wzjyqrc9bMpCzLNvP0+vk5foJ4ZZpvct37K84rJGSXZGiwNJhU7YF9KBCoddfwXSY8pgNfr5C1JMSx2SqKVGkS9d+yUIV4JKd7km+/oQ+02pu6KXiWe61w7t+Yb3zyMS8Uu1xWx+IpKFH5LmTXM0z+VIpzlnOSF2hK2MjSyl4779ItIbEkLcW6ol11XJBjvqgt/bU0gtCVcf4gaI=
   file_glob: true
-  file: "*.vsix"
-  cleanup: false
+  file: "vscode-language-lama-*.vsix"
+  skip_cleanup: true
   on:
     repo: egormkn/vscode-language-lama
     branch: master
