@@ -37,6 +37,7 @@ const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument)
 // Default client capabilities
 let capabilities: ClientCapabilities
 let workspace: WorkspaceFolder[] | null
+let client: { name: string; version?: string | undefined } | undefined
 
 connection.onInitialize((params: InitializeParams) => {
 
@@ -44,19 +45,19 @@ connection.onInitialize((params: InitializeParams) => {
 
   capabilities = params.capabilities
   workspace = params.workspaceFolders
+  client = params.clientInfo
 
   connection.console.log("Capabilities:")
   connection.console.log(JSON.stringify(capabilities, undefined, 2))
 
-  connection.console.log("Workspace folders:")
-  connection.console.log(JSON.stringify(workspace, undefined, 2))
+  if (workspace) {
+    connection.console.log("Workspace folders:")
+    workspace.forEach(folder => connection.console.log(`\t${folder.name} (${folder.uri})`))
+  }
 
-  connection.console.log("Client info:")
-  connection.console.log(JSON.stringify(params.clientInfo, undefined, 2))
-
-  // hasConfigurationCapability = !!capabilities.workspace?.configuration;
-  // hasWorkspaceFolderCapability = !!capabilities.workspace?.workspaceFolders;
-  // hasDiagnosticRelatedInformationCapability = !!capabilities.textDocument?.publishDiagnostics?.relatedInformation;
+  if (client) {
+    connection.console.log(`Client: ${client.name} v${client.version}`)
+  }
 
   return {
     capabilities: {
