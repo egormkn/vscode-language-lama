@@ -1,26 +1,20 @@
-interface Constructable<T> {
-  new(): T;
-}
+type Constructor<T> = new (...args: unknown[]) => T
 
 interface Resettable<T> {
-  reset?(object: T): void;
+  reset?(object: T): void
 }
 
-/**
- * Simple object pool
- */
 export class Pool<T> {
-  private pool: T[] = [];
+  private readonly pool: T[] = []
 
-  constructor (private type: Constructable<T> & Resettable<T>) { }
+  constructor (private readonly Type: Constructor<T> & Resettable<T>) { }
 
-  get (): T {
-    return this.pool.pop() ?? new this.type()
+  get (...args: unknown[]): T {
+    return this.pool.pop() ?? new this.Type(...args)
   }
 
   release (object: T): void {
-    this.type.reset?.(object)
+    this.Type.reset?.(object)
     this.pool.push(object)
   }
 }
-

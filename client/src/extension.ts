@@ -13,15 +13,15 @@ import {
 let client: LanguageClient
 
 export function activate (context: ExtensionContext): void {
-
   console.log('Lama Language extension is activated')
 
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with registerCommand
   // The commandId parameter must match the command field in package.json
-  const disposable = commands.registerCommand('Lama.Compile', () => {
-    window.showInformationMessage('Hello World!')
+  const disposable = commands.registerCommand('lama.run', async () => {
+    await window.showInformationMessage('Not implemented yet')
   })
+
   context.subscriptions.push(disposable)
 
   // The server is implemented in node
@@ -32,14 +32,14 @@ export function activate (context: ExtensionContext): void {
     transport: TransportKind.ipc
   }
 
-  // If the extension is launched in debug mode then the debug server 
+  // If the extension is launched in debug mode then the debug server
   // options are used. Otherwise the run options are used
   const serverOptions: ServerOptions = {
     run: { ...serverModule },
     debug: {
       ...serverModule,
       options: {
-        // run the server in Node's Inspector mode 
+        // run the server in Node's Inspector mode
         // so VS Code can attach to the server for debugging
         execArgv: ['--nolazy', '--inspect=6009']
       }
@@ -69,8 +69,8 @@ export function activate (context: ExtensionContext): void {
 }
 
 export function deactivate (): Thenable<void> | undefined {
-
   console.log('Lama Language extension is deactivated')
 
+  // eslint-disable-next-line @typescript-eslint/return-await
   return client?.stop()
 }

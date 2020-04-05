@@ -5,9 +5,9 @@ scripts/**
 **/*.ts
 **/*.map
 **/tsconfig.json
-**/tsconfig.base.json
 **/.eslintrc.json
 
+.editorconfig
 .gitignore
 .travis.yml
 LICENSE

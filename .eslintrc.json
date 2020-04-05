@@ -2,7 +2,8 @@
     "root": true,
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
-        "ecmaVersion": 6,
+        "project": "./**/tsconfig.json",
+        "ecmaVersion": 10,
         "sourceType": "module"
     },
     "plugins": [
@@ -11,7 +12,8 @@
     "extends": [
         "eslint:recommended",
         "plugin:@typescript-eslint/eslint-recommended",
-        "plugin:@typescript-eslint/recommended"
+        "plugin:@typescript-eslint/recommended",
+        "standard-with-typescript"
     ],
     "ignorePatterns": [
         "node_modules",
@@ -19,7 +21,10 @@
         "test"
     ],
     "rules": {
+        "padded-blocks": "off",
         "@typescript-eslint/no-unused-vars": "off",
-        "@typescript-eslint/camelcase": "off"
+        "@typescript-eslint/strict-boolean-expressions": "off",
+        "@typescript-eslint/return-await": "off",
+        "@typescript-eslint/no-floating-promises": "off"
     }
 }
