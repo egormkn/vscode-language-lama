@@ -28,7 +28,7 @@
         "Snippets",
         "Linters"
     ],
-    "icon": "./images/icon.png",
+    "icon": "images/icon.png",
     "galleryBanner": {
         "color": "#C8A000",
         "theme": "dark"
