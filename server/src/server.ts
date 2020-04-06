@@ -1,32 +1,16 @@
 import {
-  createConnection,
-  TextDocuments,
-  Diagnostic,
-  DiagnosticSeverity,
-  ProposedFeatures,
-  InitializeParams,
   DidChangeConfigurationNotification,
-  ClientCapabilities,
-  TextDocumentSyncKind,
-  TextDocumentChangeEvent,
-  DidChangeWatchedFilesParams,
-  WorkspaceFolder,
-  WorkspaceFoldersChangeEvent,
-  DidChangeConfigurationParams,
-  IConnection
+  TextDocuments
 } from 'vscode-languageserver'
 
 import { TextDocument } from 'vscode-languageserver-textdocument'
 
+import { capabilities, connection } from './connection'
+import { documentSettings, resetSettings } from './settings'
 import { validate } from './validator'
-import { Parser } from './parser'
-import { Pool } from './pool'
-import { Settings, globalSettings, documentSettings } from './settings'
-import { connection, client, capabilities, workspace } from './connection'
 
 // Create a simple text document manager
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument)
-documents.listen(connection)
 
 connection.onInitialized(() => {
   if (capabilities.workspace?.configuration) {
@@ -35,7 +19,7 @@ connection.onInitialized(() => {
     })
   }
   if (capabilities.workspace?.workspaceFolders) {
-    connection.workspace.onDidChangeWorkspaceFolders(event => {
+    connection.workspace.onDidChangeWorkspaceFolders(() => {
       connection.console.log('Workspace folder change event received')
     })
   }
@@ -43,9 +27,13 @@ connection.onInitialized(() => {
 
 // //////////////////////////////////////////////////////////////////////////
 
-// Only keep settings for open documents
+documents.onDidOpen(event => {
+  connection.console.log(`TextDocument opened: ${event.document.uri}`)
+})
+
 documents.onDidClose(event => {
   connection.console.log(`TextDocument closed: ${event.document.uri}`)
+  // Only keep settings for open documents
   documentSettings.delete(event.document.uri)
 })
 
@@ -54,6 +42,14 @@ documents.onDidClose(event => {
 documents.onDidChangeContent(event => {
   console.log(`TextDocument content changed: ${event.document.uri}`)
   validate(event.document)
+})
+
+documents.onDidSave(event => {
+  connection.console.log(`TextDocument saved: ${event.document.uri}`)
+})
+
+documents.onWillSave(event => {
+  connection.console.log(`TextDocument will be saved: ${event.document.uri}`)
 })
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -90,12 +86,6 @@ connection.onDidChangeTextDocument(params => {
  */
 connection.onDidSaveTextDocument(params => {
   connection.console.log(`Document ${params.textDocument.uri} saved`)
-  const document = documents.get(params.textDocument.uri)
-  if (document) {
-    validate(document)
-  } else {
-    connection.console.log('NO DOCUMENT')
-  }
 })
 
 /**
@@ -117,14 +107,10 @@ connection.onDidChangeWatchedFiles(params => {
 
 connection.onDidChangeConfiguration(params => {
   connection.console.log(`Configuration changed: ${JSON.stringify(params.settings)}`)
-
-  // if (capabilities.workspace?.configuration) {
-  //   documentSettings.clear() // Reset all cached document settings
-  // } else {
-  //   globalSettings = (params.settings.lama || defaultSettings) as Settings
-  // }
-
-  // documents.all().forEach(validateTextDocument) // Revalidate all open text documents
+  resetSettings(params.settings.lama)
+  Promise.all(documents.all().map(validate))
 })
+
+documents.listen(connection)
 
 connection.listen()

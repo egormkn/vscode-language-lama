@@ -1,5 +1,7 @@
 .vscode/**
 .vscode-test/**
+images/**
+!images/icon.png
 scripts/**
 
 **/*.ts

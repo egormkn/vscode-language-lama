@@ -1,3 +1,5 @@
+import { connection, capabilities } from './connection'
+
 export interface Settings {
   maxNumberOfProblems: number
   sdkPath?: string
@@ -15,3 +17,27 @@ export let globalSettings: Settings = defaultSettings
 
 // Cache the settings of all open documents
 export const documentSettings: Map<string, Thenable<Settings>> = new Map()
+
+export function getDocumentSettings (resource: string): Thenable<Settings> {
+  if (!capabilities.workspace?.configuration) {
+    return Promise.resolve(globalSettings)
+  }
+  let result = documentSettings.get(resource)
+  if (!result) {
+    result = connection.workspace.getConfiguration({
+      scopeUri: resource,
+      section: 'lama'
+    })
+    connection.console.log(`Retrieved configuration: ${JSON.stringify(result)}`)
+    documentSettings.set(resource, result)
+  }
+  return result
+}
+
+export function resetSettings (settings?: Settings): void {
+  if (capabilities.workspace?.configuration) {
+    documentSettings.clear() // Reset all cached document settings
+  } else {
+    globalSettings = settings ?? defaultSettings
+  }
+}

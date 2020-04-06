@@ -15,9 +15,14 @@
     "engines": {
         "vscode": "^1.30.0"
     },
-    "displayName": "Lama Language",
+    "displayName": "Lama Language: Preview",
     "publisher": "egormkn",
-    "keywords": ["language", "lama", "syntax", "lsp"],
+    "keywords": [
+        "language",
+        "lama",
+        "syntax",
+        "lsp"
+    ],
     "categories": [
         "Programming Languages",
         "Snippets",
@@ -111,12 +116,12 @@
         ],
         "menus": {
             "commandPalette": [
-              {
-                "command": "lama.run",
-                "when": "editorLangId == lama"
-              }
+                {
+                    "command": "lama.run",
+                    "when": "editorLangId == lama"
+                }
             ]
-          }
+        }
     },
     "scripts": {
         "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",

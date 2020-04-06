@@ -36,6 +36,10 @@ export class Parser extends CstParser {
 
   public lexingResult?: ILexingResult
 
+  public static reset (parser: Parser): void {
+    parser.reset()
+  }
+
   constructor () {
     super(vocabulary, {
       traceInitPerf: true, // false for production
@@ -49,7 +53,7 @@ export class Parser extends CstParser {
   public parse (text: string): CstNode {
     this.lexingResult = lexer.tokenize(text)
     this.input = this.lexingResult.tokens
-    return this.unit(0, new Scope())
+    return this.unit(0, [new Scope()])
   }
 
   private readonly unit = this.RULE('unit', (scope: Scope) => {
@@ -206,12 +210,12 @@ export class Parser extends CstParser {
   })
 
   private readonly basicExpression = this.RULE('basicExpression', (scope: Scope) => {
-    this.SUBRULE1(this.postfixExpression)
+    this.SUBRULE1(this.postfixExpression, { ARGS: [scope] })
     this.MANY({
       GATE: () => !this.BACKTRACK(this.caseBranchPrefix).apply(this),
       DEF: () => {
         this.CONSUME(Tokens.Operator)
-        this.SUBRULE2(this.postfixExpression)
+        this.SUBRULE2(this.postfixExpression, { ARGS: [scope] })
       }
     })
   })
@@ -283,7 +287,7 @@ export class Parser extends CstParser {
             this.SUBRULE(this.definition, { ARGS: [scope] })
           })
           this.OPTION2(() => {
-            this.SUBRULE1(this.expression)
+            this.SUBRULE1(this.expression, { ARGS: [scope] })
           })
           this.CONSUME(Tokens.RCurly)
         }
@@ -341,7 +345,7 @@ export class Parser extends CstParser {
       {
         ALT: () => {
           this.CONSUME2(Tokens.LRound)
-          this.SUBRULE2(this.expression)
+          this.SUBRULE2(this.expression, { ARGS: [scope] })
           this.CONSUME2(Tokens.RRound)
         }
       },
@@ -367,7 +371,7 @@ export class Parser extends CstParser {
   private readonly listOrScopeExpression = this.RULE('listOrScopeExpression', (scope: Scope) => {
     this.CONSUME(Tokens.LCurly)
     this.OPTION1(() => {
-      this.SUBRULE1(this.expression)
+      this.SUBRULE1(this.expression, { ARGS: [scope] })
       this.OPTION2(() => {
         this.CONSUME(Tokens.Comma)
         this.AT_LEAST_ONE_SEP({
@@ -445,11 +449,11 @@ export class Parser extends CstParser {
 
   private readonly forExpression = this.RULE('forExpression', (scope: Scope) => {
     this.CONSUME(Tokens.For)
-    this.SUBRULE1(this.expression)
+    this.SUBRULE1(this.expression, { ARGS: [scope] })
     this.CONSUME1(Tokens.Comma)
-    this.SUBRULE2(this.expression)
+    this.SUBRULE2(this.expression, { ARGS: [scope] })
     this.CONSUME2(Tokens.Comma)
-    this.SUBRULE3(this.expression)
+    this.SUBRULE3(this.expression, { ARGS: [scope] })
     this.CONSUME(Tokens.Do)
     this.SUBRULE(this.scopeExpression, { ARGS: [new Scope(scope)] })
     this.CONSUME(Tokens.Od)
@@ -489,7 +493,7 @@ export class Parser extends CstParser {
     this.OR([
       {
         ALT: () => {
-          this.SUBRULE1(this.postfixCall)
+          this.SUBRULE1(this.postfixCall, { ARGS: [scope] })
         }
       },
       {
@@ -514,7 +518,7 @@ export class Parser extends CstParser {
           this.CONSUME3(Tokens.Dot)
           this.CONSUME(Tokens.LIdentifier)
           this.OPTION(() => {
-            this.SUBRULE2(this.postfixCall)
+            this.SUBRULE2(this.postfixCall, { ARGS: [scope] })
           })
         }
       }

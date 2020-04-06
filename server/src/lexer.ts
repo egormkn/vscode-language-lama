@@ -14,7 +14,7 @@ const Bar = createToken({ name: 'Bar', label: '|', pattern: /\|/, longer_alt: Op
 const Colon = createToken({ name: 'Colon', label: ':', pattern: /:/, longer_alt: Operator, categories: [Operator] })
 const Equal = createToken({ name: 'Equal', label: '=', pattern: /=/, longer_alt: Operator, categories: [Operator] })
 const Hash = createToken({ name: 'Hash', label: '#', pattern: /#/, longer_alt: Operator, categories: [Operator] })
-const Minus = createToken({ name: 'Minus', label: '-', pattern: /-/, longer_alt: Arrow, categories: [Operator] })
+const Minus = createToken({ name: 'Minus', label: '-', pattern: /-/, longer_alt: Operator, categories: [Operator] })
 
 const Comma = createToken({ name: 'Comma', label: ',', pattern: /,/ })
 const Dot = createToken({ name: 'Dot', label: '.', pattern: /\./ })

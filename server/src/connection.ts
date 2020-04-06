@@ -1,22 +1,25 @@
-import { IConnection, createConnection, ProposedFeatures, TextDocumentSyncKind, ClientCapabilities, WorkspaceFolder } from 'vscode-languageserver'
+import {
+  ClientCapabilities,
+  IConnection,
+  ProposedFeatures,
+  TextDocumentSyncKind,
+  WorkspaceFolder,
+  createConnection
+} from 'vscode-languageserver'
 
-// Create an IPC connection for the server and include all preview / proposed LSP features
-export const connection: IConnection = createConnection(ProposedFeatures.all)
-
-connection.console.info(`Lama server running in node ${process.version}`)
+// Create an IPC connection for the server using all preview / proposed LSP features
+const connection: IConnection = createConnection(ProposedFeatures.all)
 
 interface ClientInfo {
   name: string
   version?: string
 }
 
-// Default client capabilities
-export let capabilities: ClientCapabilities
-export let workspace: WorkspaceFolder[] | null
-export let client: ClientInfo | undefined
+let capabilities: ClientCapabilities
+let workspace: WorkspaceFolder[] | null
+let client: ClientInfo | undefined
 
 connection.onInitialize(params => {
-
   connection.console.log('Initializing Lama Language Server...')
 
   capabilities = params.capabilities
@@ -24,7 +27,7 @@ connection.onInitialize(params => {
   client = params.clientInfo
 
   connection.console.log('Capabilities:')
-  connection.console.log(JSON.stringify(capabilities, undefined, 2))
+  connection.console.log(JSON.stringify(capabilities, null, 2))
 
   if (workspace !== null) {
     connection.console.log('Workspace folders:')
@@ -34,6 +37,8 @@ connection.onInitialize(params => {
   if (client !== undefined) {
     connection.console.log(`Client: ${client.name} ${client.version ?? ''}`)
   }
+
+  connection.console.info(`Lama server running in node ${process.version}`)
 
   return {
     capabilities: {
@@ -49,3 +54,5 @@ connection.onInitialize(params => {
     }
   }
 })
+
+export { connection, capabilities, workspace, client }

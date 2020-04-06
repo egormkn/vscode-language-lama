@@ -89,7 +89,7 @@
             "\t$0",
             "}"
         ],
-        "description": "Named function"
+        "description": "Function"
     },
     "lambda": {
         "scope": "lama",
@@ -105,7 +105,7 @@
         "scope": "lama",
         "prefix": "infix",
         "body": [
-            "${1|infix,infixl,infixr|} ${2:op} ${3|at,before,after|} ${4:op} (${5:lhs, rhs}) {",
+            "${1|infix,infixl,infixr|} ${2:???} ${3|at,before,after|} ${4:???} (${5:lhs, rhs}) {",
             "\t$0",
             "}"
         ],

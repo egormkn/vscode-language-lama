@@ -1,33 +1,17 @@
 import { TextDocument, Diagnostic, DiagnosticSeverity, IConnection, ClientCapabilities } from 'vscode-languageserver'
-import { Settings, globalSettings, documentSettings } from './settings'
+import { Settings, getDocumentSettings } from './settings'
 import { Parser } from './parser'
 import { Pool } from './pool'
 import { connection, capabilities } from './connection'
 
 const parsers = new Pool(Parser)
 
-function getDocumentSettings (resource: string): Thenable<Settings> {
-  if (!capabilities.workspace?.configuration) {
-    return Promise.resolve(globalSettings)
-  }
-  let result = documentSettings.get(resource)
-  if (!result) {
-    result = connection.workspace.getConfiguration({
-      scopeUri: resource,
-      section: 'lama'
-    })
-    connection.console.log(`Retrieved configuration: ${JSON.stringify(result)}`)
-    documentSettings.set(resource, result)
-  }
-  return result
-}
-
 export async function validate (textDocument: TextDocument): Promise<void> {
 
   connection.console.log('PARSING')
 
   // In this simple example we get the settings for every validate run.
-  const settings = await getDocumentSettings(textDocument.uri)
+  const settings: Settings = await getDocumentSettings(textDocument.uri)
 
   const text = textDocument.getText()
 
@@ -61,7 +45,9 @@ export async function validate (textDocument: TextDocument): Promise<void> {
           }
         ]
       }
-      diagnostics.push(diagnostic)
+      if (diagnostics.length < settings.maxNumberOfProblems) {
+        diagnostics.push(diagnostic)
+      }
     })
   }
 
@@ -89,9 +75,13 @@ export async function validate (textDocument: TextDocument): Promise<void> {
           }
         ]
       }
-      diagnostics.push(diagnostic)
+      if (diagnostics.length < settings.maxNumberOfProblems) {
+        diagnostics.push(diagnostic)
+      }
     })
   }
+
+  parsers.release(parser)
 
   connection.sendDiagnostics({ uri: textDocument.uri, diagnostics })
 }
