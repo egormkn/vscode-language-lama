@@ -1,24 +1,15 @@
-interface Fun {
-  name: string;
+interface Entity<T extends string> {
+  type: T
+  identifier: string
 }
 
-interface Var {
-  name: string;
+export type Function = Entity<'F'>
+export type Variable = Entity<'V'>
+export type Import = Entity<'I'>
+export type Infix = Entity<'L' | 'R' | 'N'> & {
+  mode: 'at' | 'after' | 'before'
+  other: string
 }
 
-interface Import {
-  unit: string;
-}
-
-interface Infix {
-  associativity: "left" | "right" | "none";
-  operator: string;
-  location: {
-    mode: "at" | "after" | "before";
-    operator: string;
-  };
-}
-
-type Interface = (Fun | Var | Import | Infix)[]
-
-export { Fun, Var, Import, Infix, Interface }
+export type InterfaceItem = Function | Variable | Import | Infix
+export type Interface = ArrayLike<InterfaceItem>

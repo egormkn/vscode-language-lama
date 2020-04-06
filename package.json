@@ -15,19 +15,28 @@
     "engines": {
         "vscode": "^1.30.0"
     },
+    "displayName": "Lama Language: Preview",
     "publisher": "egormkn",
-    "displayName": "Lama Language",
+    "keywords": [
+        "language",
+        "lama",
+        "syntax",
+        "lsp"
+    ],
     "categories": [
         "Programming Languages",
-        "Snippets"
+        "Snippets",
+        "Linters"
     ],
     "icon": "images/icon.png",
     "galleryBanner": {
         "color": "#C8A000",
         "theme": "dark"
     },
+    "preview": true,
     "activationEvents": [
         "onLanguage:lama",
+        "onCommand:lama.run",
         "workspaceContains:**/*.lama"
     ],
     "main": "./client/out/extension",
@@ -100,31 +109,43 @@
         },
         "commands": [
             {
-                "command": "Lama.Compile",
-                "title": "Compile current file",
+                "command": "lama.run",
+                "title": "Run current file in Interpreter mode",
                 "category": "Lama"
             }
-        ]
+        ],
+        "menus": {
+            "commandPalette": [
+                {
+                    "command": "lama.run",
+                    "when": "editorLangId == lama"
+                }
+            ]
+        }
     },
     "scripts": {
+        "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -b",
-        "lint": "eslint src --ext ts",
         "watch": "tsc -b -w",
+        "lint": "eslint --ext ts .",
         "pretest": "npm run compile && npm run lint",
-        "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
         "test": "sh ./scripts/e2e.sh",
         "clean": "shx rm -rf **/out/",
-        "clean:all": "shx rm -rf **/out/ **/node_modules/",
-        "testfile": "ts-node ./server/src/test.ts"
+        "clean:all": "shx rm -rf **/out/ **/node_modules/"
     },
     "devDependencies": {
         "@types/glob": "^7.1.1",
-        "@types/mocha": "^7.0.1",
+        "@types/mocha": "^7.0.2",
         "@types/node": "^13.11.0",
         "@typescript-eslint/eslint-plugin": "^2.26.0",
         "@typescript-eslint/parser": "^2.26.0",
         "eslint": "^6.8.0",
+        "eslint-config-standard-with-typescript": "^15.0.1",
+        "eslint-plugin-import": "^2.20.2",
+        "eslint-plugin-node": "^11.1.0",
+        "eslint-plugin-promise": "^4.2.1",
+        "eslint-plugin-standard": "^4.0.1",
         "glob": "^7.1.6",
         "mocha": "^7.1.1",
         "shx": "^0.3.2",
