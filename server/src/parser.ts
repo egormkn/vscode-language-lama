@@ -32,6 +32,8 @@ function getPosition (...args: IToken[]): Position {
   }
 }
 
+const debug = process.env.NODE_ENV === 'development'
+
 export class Parser extends CstParser {
 
   public lexingResult?: ILexingResult
@@ -42,8 +44,8 @@ export class Parser extends CstParser {
 
   constructor () {
     super(vocabulary, {
-      traceInitPerf: true, // false for production
-      skipValidations: false, // true for production
+      traceInitPerf: !debug, // false for production
+      skipValidations: debug, // true for production
       recoveryEnabled: true,
       nodeLocationTracking: 'full'
     })

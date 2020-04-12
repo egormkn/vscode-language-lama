@@ -13,6 +13,9 @@
             "args": [
                 "--extensionDevelopmentPath=${workspaceRoot}"
             ],
+            "env": {
+                "NODE_ENV": "development"
+            },
             "outFiles": [
                 "${workspaceRoot}/client/out/**/*.js"
             ],

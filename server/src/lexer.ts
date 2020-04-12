@@ -183,9 +183,11 @@ export const vocabulary = [
   CharLiteral
 ]
 
+const debug = process.env.NODE_ENV === 'development'
+
 export const lexer = new Lexer(vocabulary, {
-  skipValidations: false, // true for production
-  traceInitPerf: true, // false for production
+  skipValidations: !debug, // true for production
+  traceInitPerf: debug, // false for production
   ensureOptimizations: true,
   positionTracking: 'full'
 })
