@@ -1,6 +1,10 @@
 # Lama Language extension for VSCode
 
 [![Build Status](https://travis-ci.com/egormkn/vscode-language-lama.svg?branch=master)](https://travis-ci.com/egormkn/vscode-language-lama)
+[![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/egormkn.vscode-language-lama)](https://marketplace.visualstudio.com/items?itemName=egormkn.vscode-language-lama)
+[![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/egormkn.vscode-language-lama)](https://marketplace.visualstudio.com/_apis/public/gallery/publishers/egormkn/vsextensions/vscode-language-lama/latest/vspackage)
+[![Visual Studio Marketplace Rating (Stars)](https://img.shields.io/visual-studio-marketplace/stars/egormkn.vscode-language-lama)](https://marketplace.visualstudio.com/items?itemName=egormkn.vscode-language-lama&ssr=false#review-details)
+
 
 An extension for Visual Studio Code that adds some basic editing features such as syntax highlighting, code folding, snippets and syntax checking for the [Lama](https://github.com/JetBrains-Research/Lama) language.
 

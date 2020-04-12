@@ -12,5 +12,3 @@ scripts/**
 .editorconfig
 .gitignore
 .travis.yml
-LICENSE
-README.md
