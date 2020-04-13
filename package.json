@@ -1,7 +1,7 @@
 {
     "name": "vscode-language-lama",
     "description": "Lama Language support for Visual Studio Code",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "author": "Egor Makarenko <egormkn@yandex.ru>",
     "license": "MIT",
     "homepage": "https://github.com/egormkn/vscode-language-lama",
