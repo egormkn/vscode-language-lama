@@ -14,6 +14,10 @@ An extension for Visual Studio Code that adds some basic editing features such a
 
   ![Syntax highlighting](images/highlighting.png)
 
+- Type definitions (only highlighting for now)
+
+  ![Type definitions](images/typedefs.png)
+
 - Code snippets
 
   ![Code snippets](images/snippets.png)

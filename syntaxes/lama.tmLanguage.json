@@ -999,7 +999,7 @@
             "match": "_"
         },
         "s-expression-pattern-with-parameters": {
-            "name": "meta.expression.symbolic.lama",
+            "name": "meta.expression.symbolic.pattern.lama",
             "begin": "\\b([A-Z][a-zA-Z_0-9]*)\\s*(\\()(?!\\*)",
             "beginCaptures": {
                 "1": {
@@ -1143,8 +1143,218 @@
             "name": "variable.parameter.lama",
             "match": "\\b(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\b"
         },
+
+
+
+
+
+
+
+        "type-pattern": {
+            "patterns": [
+                {
+                    "name": "keyword.operator.cons.lama",
+                    "match": ":(?![+*/%$#@!|&^~?<>:=\\-])"
+                },
+                {
+                    "name": "keyword.operator.type.arrow.lama",
+                    "match": "->(?![+*/%$#@!|&^~?<>:=\\-])"
+                },
+                {
+                    "name": "keyword.operator.type.alteration.lama",
+                    "match": "\\|(?![+*/%$#@!|&^~?<>:=\\-])"
+                },
+                {
+                    "include": "#type-simple-pattern"
+                }
+            ]
+        },
+        "type-simple-pattern": {
+            "patterns": [
+                {
+                    "include": "#type-wildcard-pattern"
+                },
+                {
+                    "include": "#type-s-expression-pattern-with-parameters"
+                },
+                {
+                    "include": "#type-s-expression-pattern-without-parameters"
+                },
+                {
+                    "include": "#type-array-pattern"
+                },
+                {
+                    "include": "#type-list-pattern"
+                },
+                {
+                    "include": "#decimal"
+                },
+                {
+                    "include": "#string"
+                },
+                {
+                    "include": "#character"
+                },
+                {
+                    "include": "#boolean"
+                },
+                {
+                    "include": "#type-hash-pattern"
+                },
+                {
+                    "include": "#type-parentheses-pattern"
+                },
+                {
+                    "include": "#type-as-pattern"
+                },
+                {
+                    "include": "#type-name-pattern"
+                }
+            ]
+        },
+        "type-wildcard-pattern": {
+            "name": "keyword.operator.pattern.wildcard.lama",
+            "match": "_"
+        },
+        "type-s-expression-pattern-with-parameters": {
+            "name": "meta.expression.symbolic.pattern.lama",
+            "begin": "\\b([A-Z][a-zA-Z_0-9]*)\\s*(\\()(?!\\*)",
+            "beginCaptures": {
+                "1": {
+                    "name": "entity.name.type.lama"
+                },
+                "2": {
+                    "name": "punctuation.section.parens.begin.lama"
+                }
+            },
+            "end": "\\)",
+            "endCaptures": {
+                "0": {
+                    "name": "punctuation.section.parens.end.lama"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#punctuation-comma"
+                },
+                {
+                    "include": "#type-pattern"
+                }
+            ]
+        },
+        "type-s-expression-pattern-without-parameters": {
+            "name": "meta.expression.symbolic.lama",
+            "match": "\\b([A-Z][a-zA-Z_0-9]*)\\b",
+            "captures": {
+                "1": {
+                    "name": "entity.name.type.lama"
+                }
+            }
+        },
+        "type-array-pattern": {
+            "name": "meta.structure.array.lama",
+            "begin": "\\[",
+            "beginCaptures": {
+                "0": {
+                    "name": "punctuation.definition.array.begin.lama"
+                }
+            },
+            "end": "\\]",
+            "endCaptures": {
+                "0": {
+                    "name": "punctuation.definition.array.end.lama"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#punctuation-comma"
+                },
+                {
+                    "include": "#type-pattern"
+                }
+            ]
+        },
+        "type-list-pattern": {
+            "name": "meta.structure.list.lama",
+            "begin": "\\{",
+            "beginCaptures": {
+                "0": {
+                    "name": "punctuation.definition.list.begin.lama"
+                }
+            },
+            "end": "\\}",
+            "endCaptures": {
+                "0": {
+                    "name": "punctuation.definition.list.end.lama"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#punctuation-comma"
+                },
+                {
+                    "include": "#type-pattern"
+                }
+            ]
+        },
+        "type-hash-pattern": {
+            "name": "entity.name.type.lama",
+            "match": "(#)\\s*(boxed|unboxed|string|array|sexp|fun|int|char|boolean)\\b"
+        },
+        "type-parentheses-pattern": {
+            "name": "meta.parens.lama",
+            "begin": "\\(",
+            "beginCaptures": {
+                "0": {
+                    "name": "punctuation.section.parens.begin.lama"
+                }
+            },
+            "end": "\\)",
+            "endCaptures": {
+                "0": {
+                    "name": "punctuation.section.parens.end.lama"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#type-pattern"
+                }
+            ]
+        },
+        "type-as-pattern": {
+            "begin": "\\b(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\s*(@)",
+            "end": "(?=.|$)",
+            "applyEndPatternLast": 1,
+            "beginCaptures": {
+                "1": {
+                    "name": "variable.parameter.lama"
+                },
+                "2": {
+                    "name": "keyword.operator.as-pattern.lama"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#type-pattern"
+                },
+                {
+                    "match": " "
+                }
+            ]
+        },
+        "type-name-pattern": {
+            "name": "variable.parameter.lama",
+            "match": "\\b(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\b"
+        },
+
+
+
+
         "docblock": {
             "patterns": [
+                {
+                    "include": "#typedef-block"
+                },
                 {
                     "match": "((@)author)\\s+(.*)?$",
                     "captures": {
@@ -1262,6 +1472,68 @@
                 }
             ]
         },
+        "typedef-line": {
+            "name": "meta.type.declaration.lama",
+            "begin": "(@)type\\b",
+            "beginCaptures": {
+                "0": {
+                    "name": "keyword.other.documentation.type.lama"
+                },
+                "1": {
+                    "name": "punctuation.definition.keyword.lama"
+                }
+            },
+            "end": "(?=.|$)",
+            "applyEndPatternLast": 1,
+            "contentName": "meta.embedded",
+            "patterns": [
+                {
+                    "match": "=(?![+*/%$#@!|&^~?<>:=\\-])",
+                    "captures": {
+                        "0": {
+                            "name": "keyword.operator.type.equal.lama"
+                        }
+                    }
+                },
+                {
+                    "include": "#type-pattern"
+                },
+                {
+                    "match": " "
+                }
+            ]
+        },
+        "typedef-block": {
+            "name": "meta.type.declaration.lama",
+            "begin": "(@)type\\b",
+            "beginCaptures": {
+                "0": {
+                    "name": "keyword.other.documentation.type.lama"
+                },
+                "1": {
+                    "name": "punctuation.definition.keyword.lama"
+                }
+            },
+            "end": "(?=.|$)",
+            "applyEndPatternLast": 1,
+            "contentName": "meta.embedded",
+            "patterns": [
+                {
+                    "match": "=(?![+*/%$#@!|&^~?<>:=\\-])",
+                    "captures": {
+                        "0": {
+                            "name": "keyword.operator.type.equal.lama"
+                        }
+                    }
+                },
+                {
+                    "include": "#type-pattern"
+                },
+                {
+                    "include": "#space"
+                }
+            ]
+        },
         "comment": {
             "patterns": [
                 {
@@ -1330,7 +1602,12 @@
                             "name": "punctuation.definition.comment.lama"
                         }
                     },
-                    "end": "(?=$)"
+                    "end": "$",
+                    "patterns": [
+                        {
+                            "include": "#typedef-line"
+                        }
+                    ]
                 }
             ]
         },
