@@ -16,7 +16,7 @@
         "node": "*"
     },
     "dependencies": {
-        "chevrotain": "^6.5.0",
+        "chevrotain": "^7.0.1",
         "unist-builder": "^2.0.3",
         "vscode-languageserver": "^6.1.1",
         "vscode-languageserver-textdocument": "^1.0.1"
