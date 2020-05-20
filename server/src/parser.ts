@@ -346,6 +346,11 @@ export class Parser extends CstParser {
       },
       {
         ALT: () => {
+          this.SUBRULE(this.syntaxExpression, { ARGS: [scope] })
+        }
+      },
+      {
+        ALT: () => {
           this.CONSUME2(Tokens.LRound)
           this.SUBRULE2(this.expression, { ARGS: [scope] })
           this.CONSUME2(Tokens.RRound)
@@ -489,6 +494,100 @@ export class Parser extends CstParser {
   private readonly etaExpression = this.RULE('etaExpression', (scope: Scope) => {
     this.CONSUME(Tokens.Eta)
     this.SUBRULE(this.basicExpression, { ARGS: [scope] })
+  })
+
+  private readonly syntaxExpression = this.RULE('syntaxExpression', (scope: Scope) => {
+    this.CONSUME(Tokens.Syntax)
+    this.CONSUME(Tokens.LRound)
+    this.AT_LEAST_ONE_SEP({
+      SEP: Tokens.Bar,
+      DEF: () => {
+        this.SUBRULE(this.syntaxSeq, { ARGS: [scope] })
+      }
+    })
+    this.CONSUME(Tokens.RRound)
+  })
+
+  private readonly syntaxSeq = this.RULE('syntaxSeq', (scope: Scope) => {
+    this.AT_LEAST_ONE({
+      DEF: () => {
+        this.SUBRULE(this.syntaxBinding, { ARGS: [scope] })
+      }
+    })
+    this.OPTION(() => {
+      this.CONSUME(Tokens.LCurly)
+      this.SUBRULE(this.expression, { ARGS: [scope] })
+      this.CONSUME(Tokens.RCurly)
+    })
+  })
+
+  private readonly syntaxBinding = this.RULE('syntaxBinding', (scope: Scope) => {
+    this.OPTION1(() => {
+      this.CONSUME(Tokens.Minus)
+    })
+    this.OPTION2(() => {
+      this.SUBRULE(this.pattern, { ARGS: [scope] })
+      this.CONSUME(Tokens.Equal)
+    })
+    this.SUBRULE(this.syntaxPostfix, { ARGS: [scope] })
+  })
+
+  private readonly syntaxPostfix = this.RULE('syntaxPostfix', (scope: Scope) => {
+    this.SUBRULE(this.syntaxPrimary, { ARGS: [scope] })
+    this.OPTION(() => {
+      this.OR([
+        {
+          ALT: () => {
+            this.CONSUME(Tokens.Plus)
+          }
+        },
+        {
+          ALT: () => {
+            this.CONSUME(Tokens.Question)
+          }
+        },
+        {
+          ALT: () => {
+            this.CONSUME(Tokens.Star)
+          }
+        }
+      ])
+    })
+  })
+
+  private readonly syntaxPrimary = this.RULE('syntaxPrimary', (scope: Scope) => {
+    this.OR([
+      {
+        ALT: () => {
+          this.CONSUME(Tokens.LIdentifier)
+          this.MANY(() => {
+            this.CONSUME(Tokens.LSquare)
+            this.AT_LEAST_ONE_SEP({
+              SEP: Tokens.Comma,
+              DEF: () => {
+                this.SUBRULE1(this.expression, { ARGS: [scope] })
+              }
+            })
+            this.CONSUME(Tokens.RSquare)
+          })
+        }
+      },
+      {
+        ALT: () => {
+          this.CONSUME1(Tokens.LRound)
+          this.SUBRULE(this.syntaxExpression, { ARGS: [scope] })
+          this.CONSUME1(Tokens.RRound)
+        }
+      },
+      {
+        ALT: () => {
+          this.CONSUME(Tokens.Dollar)
+          this.CONSUME2(Tokens.LRound)
+          this.SUBRULE2(this.expression, { ARGS: [scope] })
+          this.CONSUME2(Tokens.RRound)
+        }
+      }
+    ])
   })
 
   private readonly postfix = this.RULE('postfix', (scope: Scope) => {

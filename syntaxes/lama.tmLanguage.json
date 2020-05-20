@@ -106,7 +106,7 @@
         },
         "variable-name": {
             "name": "variable.other.lama",
-            "match": "\\b(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\b"
+            "match": "\\b(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|syntax|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\b"
         },
         "function-definition": {
             "name": "meta.function.definition.lama",
@@ -137,7 +137,7 @@
         },
         "function-name": {
             "name": "entity.name.function.lama",
-            "match": "\\b(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\b"
+            "match": "\\b(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|syntax|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\b"
         },
         "function-parameters-list": {
             "name": "meta.parens.lama",
@@ -298,7 +298,7 @@
         },
         "postfix-call-with-parameters": {
             "name": "meta.function-call.lama",
-            "begin": "(?:(\\.)|\\b)(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\b(?=\\s*\\([^*])",
+            "begin": "(?:(\\.)|\\b)(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|syntax|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\b(?=\\s*\\([^*])",
             "beginCaptures": {
                 "1": {
                     "name": "punctuation.separator.function-call.lama"
@@ -346,7 +346,7 @@
         },
         "postfix-call-without-parameters": {
             "name": "meta.function-call.lama",
-            "match": "(\\.)(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\b",
+            "match": "(\\.)(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|syntax|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\b",
             "captures": {
                 "1": {
                     "name": "punctuation.separator.function-call.lama"
@@ -437,6 +437,9 @@
                 },
                 {
                     "include": "#eta-expression"
+                },
+                {
+                    "include": "#syntax-expression"
                 },
                 {
                     "include": "#parentheses-expression"
@@ -834,7 +837,7 @@
                             "include": "#case-branch"
                         },
                         {
-                            "name": "keyword.operator.pattern.alternation.lama",
+                            "name": "keyword.operator.pattern.alteration.lama",
                             "match": "\\|"
                         }
                     ]
@@ -934,6 +937,158 @@
                 }
             ]
         },
+        "syntax-expression": {
+            "name": "meta.expression.syntax.lama",
+            "begin": "\\b(syntax)\\b",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.syntax.lama"
+                }
+            },
+            "end": "(?<=\\))",
+            "patterns": [
+                {
+                    "include": "#comment"
+                },
+                {
+                    "include": "#syntax-expression-arguments"
+                }
+            ]
+        },
+        "syntax-expression-arguments": {
+            "begin": "\\(",
+            "beginCaptures": {
+                "0": {
+                    "name": "punctuation.section.parens.begin.lama"
+                }
+            },
+            "end": "\\)",
+            "endCaptures": {
+                "0": {
+                    "name": "punctuation.section.parens.end.lama"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#comment"
+                },
+                {
+                    "name": "keyword.operator.syntax.alteration.lama",
+                    "match": "\\|"
+                },
+                {
+                    "include": "#syntax-seq"
+                }
+            ]
+        },
+        "syntax-seq": {
+            "patterns": [
+                {
+                    "include": "#comment"
+                },
+                {
+                    "include": "#list-or-scope-expression"
+                },
+                {
+                    "include": "#syntax-binding"
+                }
+            ]
+        },
+        "syntax-binding": {
+            "patterns": [
+                {
+                    "include": "#comment"
+                },
+                {
+                    "match": "-",
+                    "captures": {
+                        "0": {
+                            "name": "keyword.operator.unary.minus.lama"
+                        }
+                    }
+                },
+                {
+                    "include": "#pattern"
+                },
+                {
+                    "match": "=",
+                    "captures": {
+                        "0": {
+                            "name": "keyword.operator.assignment.lama"
+                        }
+                    }
+                },
+                {
+                    "include": "#syntax-primary"
+                },
+                {
+                    "match": "[*+?]",
+                    "captures": {
+                        "0": {
+                            "name": "keyword.operator.postfix.syntax.lama"
+                        }
+                    }
+                }
+            ]
+        },
+        "syntax-primary": {
+            "patterns": [
+                {
+                    "include": "#comment"
+                },
+                {
+                    "include": "#variable-name"
+                },
+                {
+                    "include": "#array-expression"
+                },
+                {
+                    "begin": "\\$\\(",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.section.dollarparens.begin.lama"
+                        }
+                    },
+                    "end": "\\)",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.section.dollarparens.end.lama"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#comment"
+                        },
+                        {
+                            "include": "#expression"
+                        }
+                    ]
+                },
+                {
+                    "begin": "\\(",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.section.parens.begin.lama"
+                        }
+                    },
+                    "end": "\\)",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.section.parens.end.lama"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#comment"
+                        },
+                        {
+                            "include": "#syntax-expression"
+                        }
+                    ]
+                }
+            ]
+        },
+
         "pattern": {
             "patterns": [
                 {
@@ -1064,13 +1219,13 @@
         },
         "list-pattern": {
             "name": "meta.structure.list.lama",
-            "begin": "\\{",
+            "begin": "{",
             "beginCaptures": {
                 "0": {
                     "name": "punctuation.definition.list.begin.lama"
                 }
             },
-            "end": "\\}",
+            "end": "}",
             "endCaptures": {
                 "0": {
                     "name": "punctuation.definition.list.end.lama"
@@ -1116,7 +1271,7 @@
             ]
         },
         "as-pattern": {
-            "begin": "\\b(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\s*(@)",
+            "begin": "\\b(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|syntax|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\s*(@)",
             "end": "(?=.|$)",
             "applyEndPatternLast": 1,
             "beginCaptures": {
@@ -1141,7 +1296,7 @@
         },
         "name-pattern": {
             "name": "variable.parameter.lama",
-            "match": "\\b(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\b"
+            "match": "\\b(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|syntax|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\b"
         },
 
 
@@ -1322,7 +1477,7 @@
             ]
         },
         "type-as-pattern": {
-            "begin": "\\b(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\s*(@)",
+            "begin": "\\b(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|syntax|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\s*(@)",
             "end": "(?=.|$)",
             "applyEndPatternLast": 1,
             "beginCaptures": {
@@ -1344,7 +1499,7 @@
         },
         "type-name-pattern": {
             "name": "variable.parameter.lama",
-            "match": "\\b(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\b"
+            "match": "\\b(?!(?:after|array|at|before|boxed|case|do|elif|else|esac|eta|false|fi|for|fun|if|import|infix|infixl|infixr|lazy|length|local|od|of|public|repeat|return|sexp|skip|string|syntax|then|true|unboxed|until|when|while)\\b)([a-z][a-zA-Z_0-9]*)\\b"
         },
 
 

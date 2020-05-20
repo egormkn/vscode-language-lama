@@ -12,9 +12,13 @@ const Arrow = createToken({ name: 'Arrow', label: '->', pattern: /->/, longer_al
 const AtSign = createToken({ name: 'AtSign', label: '@', pattern: /@/, longer_alt: Operator, categories: [Operator] })
 const Bar = createToken({ name: 'Bar', label: '|', pattern: /\|/, longer_alt: Operator, categories: [Operator] })
 const Colon = createToken({ name: 'Colon', label: ':', pattern: /:/, longer_alt: Operator, categories: [Operator] })
+const Dollar = createToken({ name: 'Dollar', label: '$', pattern: /\$/, longer_alt: Operator, categories: [Operator] })
 const Equal = createToken({ name: 'Equal', label: '=', pattern: /=/, longer_alt: Operator, categories: [Operator] })
 const Hash = createToken({ name: 'Hash', label: '#', pattern: /#/, longer_alt: Operator, categories: [Operator] })
 const Minus = createToken({ name: 'Minus', label: '-', pattern: /-/, longer_alt: Operator, categories: [Operator] })
+const Plus = createToken({ name: 'Plus', label: '+', pattern: /\+/, longer_alt: Operator, categories: [Operator] })
+const Question = createToken({ name: 'Question', label: '?', pattern: /\?/, longer_alt: Operator, categories: [Operator] })
+const Star = createToken({ name: 'Star', label: '*', pattern: /\*/, longer_alt: Operator, categories: [Operator] })
 
 const Comma = createToken({ name: 'Comma', label: ',', pattern: /,/ })
 const Dot = createToken({ name: 'Dot', label: '.', pattern: /\./ })
@@ -63,6 +67,7 @@ const Return = createToken({ name: 'Return', pattern: /return/, longer_alt: LIde
 const Sexp = createToken({ name: 'Sexp', pattern: /sexp/, longer_alt: LIdentifier, categories: [Shape] })
 const Skip = createToken({ name: 'Skip', pattern: /skip/, longer_alt: LIdentifier })
 const String = createToken({ name: 'String', pattern: /string/, longer_alt: LIdentifier, categories: [Shape] })
+const Syntax = createToken({ name: 'Syntax', pattern: /syntax/, longer_alt: LIdentifier })
 const Then = createToken({ name: 'Then', pattern: /then/, longer_alt: LIdentifier })
 const True = createToken({ name: 'True', pattern: /true/, longer_alt: LIdentifier, categories: [BooleanLiteral] })
 const Unboxed = createToken({ name: 'Unboxed', pattern: /unboxed/, longer_alt: LIdentifier, categories: [Shape] })
@@ -144,6 +149,7 @@ export const vocabulary = [
   Sexp,
   Skip,
   String,
+  Syntax,
   Then,
   True,
   Unboxed,
@@ -171,9 +177,13 @@ export const vocabulary = [
   AtSign,
   Bar,
   Colon,
+  Dollar,
   Equal,
   Hash,
   Minus,
+  Plus,
+  Question,
+  Star,
   Operator,
   // Literals
   UIdentifier,
@@ -228,6 +238,7 @@ export default {
   Sexp,
   Skip,
   String,
+  Syntax,
   Then,
   True,
   Unboxed,
@@ -255,9 +266,13 @@ export default {
   AtSign,
   Bar,
   Colon,
+  Dollar,
   Equal,
   Hash,
   Minus,
+  Plus,
+  Question,
+  Star,
   Operator,
   // Literals
   UIdentifier,
