@@ -5,7 +5,6 @@
 [![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/egormkn.vscode-language-lama)](https://marketplace.visualstudio.com/_apis/public/gallery/publishers/egormkn/vsextensions/vscode-language-lama/latest/vspackage)
 [![Visual Studio Marketplace Rating (Stars)](https://img.shields.io/visual-studio-marketplace/stars/egormkn.vscode-language-lama)](https://marketplace.visualstudio.com/items?itemName=egormkn.vscode-language-lama&ssr=false#review-details)
 
-
 An extension for Visual Studio Code that adds some basic editing features such as syntax highlighting, code folding, snippets and syntax checking for the [Lama](https://github.com/JetBrains-Research/Lama) language.
 
 ## Features
@@ -26,10 +25,9 @@ An extension for Visual Studio Code that adds some basic editing features such a
 
   ![Syntax validation](images/validation.png)
 
-
 ## Development
 
-- Run `npm install` in this folder. This installs all necessary npm modules in both the client and server folder
+- Run `npm install` in this folder. This installs all necessary npm modules in both the client and server folders
 - Open VS Code on this folder.
 - Press Ctrl+Shift+B to compile the client and server.
 - Switch to the Debug viewlet.
