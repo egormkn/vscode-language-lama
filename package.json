@@ -132,16 +132,17 @@
         "pretest": "npm run compile && npm run lint",
         "test": "sh ./scripts/e2e.sh",
         "clean": "shx rm -rf **/out/",
-        "clean:all": "shx rm -rf **/out/ **/node_modules/"
+        "clean:all": "shx rm -rf **/out/ **/node_modules/",
+        "update:all": "npm update && cd client && npm update && cd ../server && npm update && cd .."
     },
     "devDependencies": {
         "@types/glob": "^7.1.1",
         "@types/mocha": "^7.0.2",
         "@types/node": "^14.0.4",
-        "@typescript-eslint/eslint-plugin": "^2.34.0",
-        "@typescript-eslint/parser": "^2.34.0",
-        "eslint": "^6.5.0",
-        "eslint-config-standard-with-typescript": "^17.0.0",
+        "@typescript-eslint/eslint-plugin": "^2.26.0",
+        "@typescript-eslint/parser": "^2.26.0",
+        "eslint": "^6.8.0",
+        "eslint-config-standard-with-typescript": "^15.0.1",
         "eslint-plugin-import": "^2.20.2",
         "eslint-plugin-node": "^11.1.0",
         "eslint-plugin-promise": "^4.2.1",
