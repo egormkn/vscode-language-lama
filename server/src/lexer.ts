@@ -32,7 +32,7 @@ const Semicolon = createToken({ name: 'Semicolon', label: ';', pattern: /;/ })
 const Underscore = createToken({ name: 'Underscore', label: '_', pattern: /_/ })
 
 const Shape = createToken({ name: 'Shape', pattern: Lexer.NA })
-const InfixType = createToken({ name: 'InfixType', pattern: Lexer.NA })
+const Infixity = createToken({ name: 'Infixity', pattern: Lexer.NA })
 const InfixLevel = createToken({ name: 'InfixLevel', pattern: Lexer.NA })
 const BooleanLiteral = createToken({ name: 'BooleanLiteral', pattern: Lexer.NA })
 
@@ -53,9 +53,9 @@ const For = createToken({ name: 'For', pattern: /for/, longer_alt: LIdentifier }
 const Fun = createToken({ name: 'Fun', pattern: /fun/, longer_alt: LIdentifier, categories: [Shape] })
 const If = createToken({ name: 'If', pattern: /if/, longer_alt: LIdentifier })
 const Import = createToken({ name: 'Import', pattern: /import/, longer_alt: LIdentifier })
-const InfixL = createToken({ name: 'InfixL', pattern: /infixl/, longer_alt: LIdentifier, categories: [InfixType] })
-const InfixR = createToken({ name: 'InfixR', pattern: /infixr/, longer_alt: LIdentifier, categories: [InfixType] })
-const Infix = createToken({ name: 'Infix', pattern: /infix/, longer_alt: LIdentifier, categories: [InfixType] })
+const InfixL = createToken({ name: 'InfixL', pattern: /infixl/, longer_alt: LIdentifier, categories: [Infixity] })
+const InfixR = createToken({ name: 'InfixR', pattern: /infixr/, longer_alt: LIdentifier, categories: [Infixity] })
+const Infix = createToken({ name: 'Infix', pattern: /infix/, longer_alt: LIdentifier, categories: [Infixity] })
 const Lazy = createToken({ name: 'Lazy', pattern: /lazy/, longer_alt: LIdentifier })
 const Length = createToken({ name: 'Length', pattern: /length/, longer_alt: LIdentifier })
 const Local = createToken({ name: 'Local', pattern: /local/, longer_alt: LIdentifier })
@@ -158,7 +158,7 @@ export const vocabulary = [
   While,
   // Keyword types
   Shape,
-  InfixType,
+  Infixity,
   InfixLevel,
   BooleanLiteral,
   // Punctuation
@@ -247,7 +247,7 @@ export default {
   While,
   // Keyword types
   Shape,
-  InfixType,
+  Infixity,
   InfixLevel,
   BooleanLiteral,
   // Punctuation

@@ -44,8 +44,8 @@ export class Parser extends CstParser {
 
   constructor () {
     super(vocabulary, {
-      traceInitPerf: !debug, // false for production
-      skipValidations: debug, // true for production
+      traceInitPerf: debug, // false for production
+      skipValidations: !debug, // true for production
       recoveryEnabled: true,
       nodeLocationTracking: 'full'
     })
@@ -55,26 +55,26 @@ export class Parser extends CstParser {
   public parse (text: string): CstNode {
     this.lexingResult = lexer.tokenize(text)
     this.input = this.lexingResult.tokens
-    return this.unit(0, [new Scope()])
+    return this.compilationUnit(0, [new Scope()])
   }
 
-  private readonly unit = this.RULE('unit', (scope: Scope) => {
+  private readonly compilationUnit = this.RULE('compilationUnit', (scope: Scope) => {
     this.MANY(() => {
-      const keywordToken = this.CONSUME(Tokens.Import)
-      const unitIdToken = this.CONSUME(Tokens.UIdentifier)
+      const importToken = this.CONSUME(Tokens.Import)
+      const identifierToken = this.CONSUME(Tokens.UIdentifier)
       const semicolonToken = this.CONSUME(Tokens.Semicolon)
       this.ACTION(() => {
-        const identifier = unitIdToken.image
+        const identifier = identifierToken.image
         scope.add(identifier, {
           type: 'I',
           identifier,
-          start: getStartPoint(unitIdToken),
-          end: getEndPoint(unitIdToken)
+          start: getStartPoint(identifierToken),
+          end: getEndPoint(identifierToken)
         })
       })
     })
     this.SUBRULE(this.scopeExpression, { ARGS: [new Scope(scope)] })
-  })
+  }) 
 
   private readonly scopeExpression = this.RULE('scopeExpression', (scope: Scope) => {
     this.MANY(() => {
@@ -110,17 +110,17 @@ export class Parser extends CstParser {
       this.CONSUME(Tokens.Public)
     })
     this.CONSUME(Tokens.Fun)
-    const funIdToken = this.CONSUME(Tokens.LIdentifier)
+    const identifierToken = this.CONSUME(Tokens.LIdentifier)
     this.CONSUME(Tokens.LRound)
     this.SUBRULE(this.functionArguments, { ARGS: [scope] })
     this.CONSUME(Tokens.RRound)
     this.ACTION(() => {
-      const identifier = funIdToken.image
+      const identifier = identifierToken.image
       scope.add(identifier, {
         type: 'F',
         identifier,
-        start: getStartPoint(funIdToken),
-        end: getEndPoint(funIdToken)
+        start: getStartPoint(identifierToken),
+        end: getEndPoint(identifierToken)
       })
     })
     this.SUBRULE(this.functionBody, { ARGS: [scope] })
@@ -145,20 +145,20 @@ export class Parser extends CstParser {
     this.OPTION(() => {
       this.CONSUME(Tokens.Public)
     })
-    this.CONSUME(Tokens.InfixType)
-    const operatorIdToken = this.CONSUME1(Tokens.Operator)
+    this.CONSUME(Tokens.Infixity)
+    const operatorToken = this.CONSUME1(Tokens.Operator)
     this.CONSUME(Tokens.InfixLevel)
     this.CONSUME2(Tokens.Operator)
     this.CONSUME(Tokens.LRound)
     this.SUBRULE(this.functionArguments, { ARGS: [scope] })
     this.CONSUME(Tokens.RRound)
     this.ACTION(() => {
-      const identifier = operatorIdToken.image
+      const identifier = operatorToken.image
       scope.add(identifier, {
         type: 'F',
         identifier,
-        start: getStartPoint(operatorIdToken),
-        end: getEndPoint(operatorIdToken)
+        start: getStartPoint(operatorToken),
+        end: getEndPoint(operatorToken)
       })
     })
     this.SUBRULE(this.functionBody, { ARGS: [scope] })
@@ -187,14 +187,14 @@ export class Parser extends CstParser {
   })
 
   private readonly variableDefinitionItem = this.RULE('variableDefinitionItem', (scope: Scope) => {
-    const variableIdToken = this.CONSUME(Tokens.LIdentifier)
+    const identifierToken = this.CONSUME(Tokens.LIdentifier)
     this.ACTION(() => {
-      const identifier = variableIdToken.image
+      const identifier = identifierToken.image
       scope.add(identifier, {
-        type: 'F',
+        type: 'V',
         identifier,
-        start: getStartPoint(variableIdToken),
-        end: getEndPoint(variableIdToken)
+        start: getStartPoint(identifierToken),
+        end: getEndPoint(identifierToken)
       })
     })
     this.OPTION(() => {
@@ -211,7 +211,7 @@ export class Parser extends CstParser {
     })
   })
 
-  private readonly basicExpression = this.RULE('basicExpression', (scope: Scope) => {
+  private readonly basicExpression = this.RULE('basicExpression', (scope: Scope) => { // FIXME, all above is correct
     this.SUBRULE1(this.postfixExpression, { ARGS: [scope] })
     this.MANY({
       GATE: () => !this.BACKTRACK(this.caseBranchPrefix).apply(this),
@@ -285,18 +285,20 @@ export class Parser extends CstParser {
       {
         ALT: () => {
           this.CONSUME(Tokens.LCurly)
-          this.AT_LEAST_ONE(() => {
-            this.SUBRULE(this.definition, { ARGS: [scope] })
-          })
-          this.OPTION2(() => {
-            this.SUBRULE1(this.expression, { ARGS: [scope] })
-          })
+          this.OR2([
+            {
+              GATE: () => this.BACKTRACK(this.listExpressionBody).apply(this),
+              ALT: () => {
+                this.SUBRULE(this.listExpressionBody, { ARGS: [scope] })
+              }
+            },
+            {
+              ALT: () => {
+                this.SUBRULE(this.scopeExpression, { ARGS: [scope] })
+              }
+            }
+          ])
           this.CONSUME(Tokens.RCurly)
-        }
-      },
-      {
-        ALT: () => {
-          this.SUBRULE(this.listOrScopeExpression, { ARGS: [scope] })
         }
       },
       {
@@ -375,21 +377,15 @@ export class Parser extends CstParser {
     this.CONSUME(Tokens.RSquare)
   })
 
-  private readonly listOrScopeExpression = this.RULE('listOrScopeExpression', (scope: Scope) => {
-    this.CONSUME(Tokens.LCurly)
-    this.OPTION1(() => {
-      this.SUBRULE1(this.expression, { ARGS: [scope] })
-      this.OPTION2(() => {
-        this.CONSUME(Tokens.Comma)
-        this.AT_LEAST_ONE_SEP({
-          SEP: Tokens.Comma,
-          DEF: () => {
-            this.SUBRULE(this.expression, { ARGS: [scope] })
-          }
-        })
-      })
+  private readonly listExpressionBody = this.RULE('listExpressionBody', (scope: Scope) => {
+    this.SUBRULE1(this.expression, { ARGS: [scope] })
+    this.CONSUME(Tokens.Comma)
+    this.AT_LEAST_ONE_SEP({
+      SEP: Tokens.Comma,
+      DEF: () => {
+        this.SUBRULE2(this.expression, { ARGS: [scope] })
+      }
     })
-    this.CONSUME(Tokens.RCurly)
   })
 
   private readonly symbolExpression = this.RULE('symbolExpression', (scope: Scope) => {
@@ -594,16 +590,6 @@ export class Parser extends CstParser {
     this.OR([
       {
         ALT: () => {
-          this.SUBRULE1(this.postfixCall, { ARGS: [scope] })
-        }
-      },
-      {
-        ALT: () => {
-          this.SUBRULE(this.postfixIndex, { ARGS: [scope] })
-        }
-      },
-      {
-        ALT: () => {
           this.CONSUME1(Tokens.Dot)
           this.CONSUME(Tokens.Length)
         }
@@ -612,6 +598,16 @@ export class Parser extends CstParser {
         ALT: () => {
           this.CONSUME2(Tokens.Dot)
           this.CONSUME(Tokens.String)
+        }
+      },
+      {
+        ALT: () => {
+          this.SUBRULE1(this.postfixCall, { ARGS: [scope] })
+        }
+      },
+      {
+        ALT: () => {
+          this.SUBRULE(this.postfixIndex, { ARGS: [scope] })
         }
       },
       {
