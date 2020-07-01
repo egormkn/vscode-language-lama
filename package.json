@@ -136,7 +136,7 @@
         "update:all": "npm update && cd client && npm update && cd ../server && npm update && cd .."
     },
     "devDependencies": {
-        "@types/glob": "^7.1.1",
+        "@types/glob": "^7.1.2",
         "@types/mocha": "^7.0.2",
         "@types/node": "^14.0.4",
         "@typescript-eslint/eslint-plugin": "^2.26.0",
